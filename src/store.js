@@ -22,9 +22,8 @@ user.recall({ sessionStorage: true }, (ack) => {
 });
 
 
-
 // Workspace store
-export const workspaceStore = getGunSvelteStore("workspaceStore", {
+export const workspaceStore = getLocalSvelteStore("workspaceStore", {
   scale: 1,
   backgroundScale: 1,
   contentX: 0,
@@ -39,7 +38,7 @@ export const workspaceStore = getGunSvelteStore("workspaceStore", {
 });
 
 // Windows store
-export const windowsStore = getGunSvelteStore("windowsStore", []);
+export const windowsStore = getLocalSvelteStore("windowsStore", []);
 
 export function getLocalSvelteStore(key, initialValue) {
   // Load workspace state from localStorage

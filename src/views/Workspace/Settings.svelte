@@ -56,7 +56,14 @@
             <p>Theme settings content here</p>
           {/if}
           {#if $activeTab === "about"}
-            <p>About content here</p>
+            <p>Licensed under AGPL-3.0-or-later.</p>
+            <p>
+              Source code: <a
+                href="https://github.com/hrkck/MyApps"
+                target="_blank"
+                rel="noopener noreferrer">https://github.com/hrkck/MyApps</a
+              >
+            </p>
           {/if}
           {#if $activeTab === "Reset Data"}
             <h1>RESET ALL DATA</h1>
