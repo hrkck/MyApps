@@ -1,0 +1,30 @@
+{
+  "name": "MyApps",
+  "short_name": "MyApps",
+  "description": "My Start Page in the Internet",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "./icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "orientation": "any",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "serviceworker": {
+    "src": "service-worker.js",
+    "scope": "/"
+  }
+}
