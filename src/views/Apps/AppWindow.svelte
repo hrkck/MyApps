@@ -102,7 +102,7 @@
 </script>
 
 <DraggableResizable {uniqueID} {store} {...draggableFunctions} bind:this={draggableComponent}>
-  <div class="window-header app-header">
+  <div id={uniqueID+"-windowheader"} class="window-header app-header">
     <div class="app-name">
       {$store.name}
     </div>
@@ -122,7 +122,7 @@
       on:keypress
     />
   </div>
-  <div class="app-content" style="" class:pointer-events={!$store.isActive}>
+  <div id={uniqueID+"-appcontent"} class="app-content" style="" class:pointer-events={!$store.isActive}>
     {#if showIcon}
       <AppPreview />
     {:else}

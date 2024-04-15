@@ -30,6 +30,7 @@
   />
   <ul id="searchResults">
     {#each searchResults as result}
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <li on:keydown on:keyup on:keypress on:click={(e) => onSearchResultClick(result)}>
         {result.name}
       </li>

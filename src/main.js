@@ -7,16 +7,16 @@ const app = new App({
 
 
 //     Register the Service Worker in Your Main JavaScript File:
-if ("serviceWorker" in navigator) {
-  addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("./service-worker.js")
-      .then((reg) => {
-        console.log("Service worker registeredd.", reg);
-      })
-      .catch((err) => console.log(`error: ${err}`));
-  });
-}
-// console.log("no service worker registration");
+// if ("serviceWorker" in navigator) {
+//   addEventListener("load", () => {
+//     navigator.serviceWorker
+//       .register("./service-worker.js")
+//       .then((reg) => {
+//         console.log("Service worker registeredd.", reg);
+//       })
+//       .catch((err) => console.log(`error: ${err}`));
+//   });
+// }
+console.log("no service worker registration");
 
 export default app

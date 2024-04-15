@@ -59,7 +59,7 @@
 </script>
 
 <DraggableResizable {uniqueID} {store} {...draggableFunctions}>
-  <div class="frame"></div>
+  <div id="{uniqueID}-child" class="frame"></div>
 </DraggableResizable>
 
 <style>

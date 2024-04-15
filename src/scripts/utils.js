@@ -14,6 +14,7 @@ export function addWindow(app, x = 0, y = 0) {
     ...app,
     component: "left-blank-for-gundb-storage",
   };
+  console.log('ADDING WINDOW', app, x, y);
   addWindowStore(uid, newAppProperties);
   return newAppProperties;
 }

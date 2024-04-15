@@ -5,7 +5,7 @@
   import AppWindow from "./Apps/AppWindow.svelte";
   import Frame from "./Apps/Frame.svelte";
   import DraggableResizable from "./DraggableResizable.svelte";
-  import { contentProperties, windowStores } from "../scripts/storage";
+  import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
   import { getAppIDsInAFrame, getContainingRectangle } from "../scripts/utils";
 
   const draggableFunctions = {

@@ -117,55 +117,34 @@
   }
   function resize(element) {
     if (!$store.resizable) return;
-    const right = document.createElement("div");
-    let classList = ["grabber"];
-    if (!grabber) {
-      classList.push("hide-grabber");
-    }
-    right.direction = "east";
-    right.classList.add(...classList);
-    right.classList.add("right");
+    const grabbers = [];
 
-    const left = document.createElement("div");
-    left.direction = "west";
-    left.classList.add(...classList);
-    left.classList.add("left");
+    function createGrabber(direction, name) {
+        const grabber = document.createElement("div");
+        grabber.direction = direction;
+        grabber.classList.add("grabber");
+        grabber.classList.add(name);
+        console.log(name);
+        grabber.id = uniqueID + "-grabber" + name;
+        return grabber;
+    };
 
-    const bottom = document.createElement("div");
-    bottom.direction = "south";
-    bottom.classList.add(...classList);
-    bottom.classList.add("bottom");
-
-    const bottomLeft = document.createElement("div");
-    bottomLeft.direction = "southwest";
-    bottomLeft.classList.add(...classList);
-    bottomLeft.classList.add("bottom-left");
-
-    const bottomRight = document.createElement("div");
-    bottomRight.direction = "southeast";
-    bottomRight.classList.add(...classList);
-    bottomRight.classList.add("bottom-right");
+    const right = createGrabber("east", "right");
+    const left = createGrabber("west", "left");
+    const bottom = createGrabber("south", "bottom");
+    const bottomLeft = createGrabber("southwest", "bottom-left");
+    const bottomRight = createGrabber("southeast", "bottom-right");
 
     let top, topLeft, topRight;
-    let grabbers;
+
     if (!$store.hideHeaderResize) {
-      top = document.createElement("div");
-      top.direction = "north";
-      top.classList.add(...classList);
-      top.classList.add("top");
+        top = createGrabber("north", "top");
+        topLeft = createGrabber("northwest", "top-left");
+        topRight = createGrabber("northeast", "top-right");
 
-      topLeft = document.createElement("div");
-      topLeft.direction = "northwest";
-      topLeft.classList.add(...classList);
-      topLeft.classList.add("top-left");
-
-      topRight = document.createElement("div");
-      topRight.direction = "northeast";
-      topRight.classList.add(...classList);
-      topRight.classList.add("top-right");
-      grabbers = [right, left, top, bottom, topLeft, topRight, bottomLeft, bottomRight];
+        grabbers.push(right, left, top, bottom, topLeft, topRight, bottomLeft, bottomRight);
     } else {
-      grabbers = [right, left, bottom, bottomLeft, bottomRight];
+        grabbers.push(right, left, bottom, bottomLeft, bottomRight);
     }
 
     let active = null,
@@ -201,6 +180,10 @@
       }
       if (direction.match("north")) {
         delta = (initialPos.y - event.pageY) / $store.contentScale;
+        if (delta < 0 && $store.height == 80) {
+          onMouseUp();
+          return;
+        }
         $store.y = initialRect.top - delta;
         $store.height = Math.max(initialRect.height + delta, minHeight);
       }
@@ -219,8 +202,6 @@
       //     event.preventDefault();
       //     return;
       //   }
-
-      console.log($store.showGrabbers, grabber);
       grabber = true;
 
       resizing = true;

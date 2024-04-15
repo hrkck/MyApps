@@ -1,8 +1,15 @@
 // storage.js
-import { get, writable } from "svelte/store";
+import { writable } from "svelte/store";
 import { user } from "./gun";
 
-export let contextMenuVisible = writable(false);
+export let contextMenu = writable({
+  visible: false,
+  x: 0,
+  y: 0,
+  screenX: 0,
+  screenY: 0,
+  originalTargetID: 'none'
+});
 // Helper function to initialize and manage local storage-backed Svelte stores
 export function getLocalStorage(key, initialValue) {
   const storedValue = localStorage.getItem(key);
