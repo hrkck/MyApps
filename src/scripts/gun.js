@@ -16,7 +16,7 @@ export const gun = Gun({
   peers: ["https://hakkisapps.labb.top/gun"],
 });
 export const SEA = Gun.SEA;
-export const user = gun.user().recall({ sessionStorage: true });
+export const user = gun.user().recall({ sessionStorage: false });
 
 user
   .get("windows")
