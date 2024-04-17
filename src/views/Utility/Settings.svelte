@@ -2,7 +2,7 @@
 <script>
   // import { resetLocalStorage } from "../../store.js";
   import { writable } from "svelte/store";
-  import { resetLocalStorage } from "../../scripts/storage";
+  import { contentProperties, resetLocalStorage } from "../../scripts/storage";
   import Login from "./Login.svelte";
 
   let isSettingsOpen = false;
@@ -10,6 +10,8 @@
 
   function handleToggleSettings(e) {
     isSettingsOpen = !isSettingsOpen;
+    $contentProperties.backgroundColor = isSettingsOpen ? "rgb(194, 204, 187)": "rgb(248, 255, 243)"
+    $contentProperties.isAWindowActive = isSettingsOpen ? "settings" : false;
   }
 
   function handleResetWorkspace(e) {

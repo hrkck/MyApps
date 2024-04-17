@@ -60,7 +60,7 @@
     },
     scaleFunc: function () {},
     clickFunc: function (store, event) {
-      console.log("clicked on window, ", uniqueID);
+      // console.log("clicked on window, ", uniqueID);
     },
     dbclickFunc: function (store, event) {
       if (!$contentProperties.isAWindowActive && !showIcon) {
@@ -71,6 +71,7 @@
           return data;
         });
         user.get("windows").get(uniqueID).put({ isActive: true });
+        $contentProperties.backgroundColor = "rgb(194, 204, 187)"
       }
     },
   };
@@ -102,7 +103,7 @@
 </script>
 
 <DraggableResizable {uniqueID} {store} {...draggableFunctions} bind:this={draggableComponent}>
-  <div id={uniqueID+"-windowheader"} class="window-header app-header">
+  <!-- <div id={uniqueID+"-windowheader"} class="window-header app-header">
     <div class="app-name">
       {$store.name}
     </div>
@@ -121,7 +122,7 @@
       on:keyup
       on:keypress
     />
-  </div>
+  </div> -->
   <div id={uniqueID+"-appcontent"} class="app-content" style="" class:pointer-events={!$store.isActive}>
     {#if showIcon}
       <AppPreview />
@@ -132,7 +133,7 @@
 </DraggableResizable>
 
 <style>
-  .app-header {
+  /* .app-header {
     position: relative;
     width: 100%;
     height: 30px;
@@ -149,13 +150,13 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
+  } */
 
   .app-content {
     position: absolute;
     width: 100%;
-    height: 100% - 30px;
-    top: 30px;
+    height: 100%;/* - 30px;*/
+    /* top: 30px; */
     bottom: 0;
     display: block;
     /* align-items: center;
@@ -169,12 +170,12 @@
     user-select: none;
   }
 
-  .close-button {
+  /* .close-button {
     border-radius: 5px;
     background-color: red;
     color: white;
     font-weight: bold;
     cursor: pointer;
     margin-right: 10px;
-  }
+  } */
 </style>

@@ -38,6 +38,7 @@
     imageAppBackgroundX: 0,
     imageAppBackgroundY: 0,
     imageAppBackgroundScale: 1,
+    backgroundColor: "rgb(214, 255, 185)",
   });
   // @ts-ignore
   $: {
@@ -91,7 +92,7 @@
       .get("workspaceData")
       .once((data) => {
         if (data) {
-          console.log(data);
+          // console.log(data);
           $imageAppStore.x = data.x;
           $imageAppStore.y = data.y;
           $imageAppStore.scale = data.scale;
@@ -167,7 +168,7 @@
     dragEndFunc: function (store, event, x, y) {
       user.get("windows").get(uniqueID).get("workspaceData").put({ x: x, y: y });
     },
-    resizeMoveFunc: function () {},
+    resizeMoveFunc: function (store, event, x, y, width, height) {},
     // @ts-ignore
     resizeStartFunc: function (store, event, x, y, width, height) {},
     // @ts-ignore
@@ -177,7 +178,6 @@
         data.contentScale = $contentProperties.scale;
         return data;
       });
-      console.log("scaling ,", scale);
       user.get("windows").get(uniqueID).get("workspaceData").put({ x: x, y: y, scale: scale });
     },
     // @ts-ignore
@@ -328,8 +328,6 @@
     console.log("clear images", event);
   }
 </script>
-
-<!-- markup (zero or more items) goes here -->
 
 <!-- main div should listen to -->
 <!-- paste event (ctrl+v) when mouse is over it and when the active window id equals uniqueid -->

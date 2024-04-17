@@ -15,7 +15,7 @@ const AppProperties = {
   resizable: true,
   keepRatio: false,
   showGrabbers: true,
-  hideHeaderResize: true,
+  hideHeaderResize: false,
   isActiveDraggable: false,
   scale: 1,
   isActive: false,
@@ -48,20 +48,20 @@ export const applications = [
     component: Frame,
     ...FrameProperties,
   },
-  {
-    id: 2,
-    name: "linkApp",
-    title: "Link App",
-    component: LinkApp,
-    ...AppProperties,
-  },
-  {
-    id: 3,
-    name: "textEditor",
-    title: "Text Editor App",
-    component: TextEditor,
-    ...AppProperties,
-  },
+  // {
+  //   id: 2,
+  //   name: "linkApp",
+  //   title: "Link App",
+  //   component: LinkApp,
+  //   ...AppProperties,
+  // },
+  // {
+  //   id: 3,
+  //   name: "textEditor",
+  //   title: "Text Editor App",
+  //   component: TextEditor,
+  //   ...AppProperties,
+  // },
   {
     id: 4,
     name: "imageReferenceApp",
@@ -69,13 +69,13 @@ export const applications = [
     component: ImageApp,
     ...AppProperties,
   },
-  {
-    id: 4,
-    name: "exampleApp",
-    title: "Example App",
-    component: ExampleApp,
-    ...AppProperties,
-  },
+  // {
+  //   id: 4,
+  //   name: "exampleApp",
+  //   title: "Example App",
+  //   component: ExampleApp,
+  //   ...AppProperties,
+  // },
   // ... add other applications;
 ];
 

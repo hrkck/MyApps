@@ -98,10 +98,10 @@
       destroy() {
         target.removeEventListener("mousedown", onStart);
         target.removeEventListener("touchstart", onStart);
-        window.removeEventListener("mousemove", onMove);
-        window.removeEventListener("mouseup", onEnd);
-        window.removeEventListener("touchmove", onMove);
-        window.removeEventListener("touchend", onEnd);
+        target.removeEventListener("mousemove", onMove);
+        target.removeEventListener("mouseup", onEnd);
+        target.removeEventListener("touchmove", onMove);
+        target.removeEventListener("touchend", onEnd);
       },
     };
   }
@@ -124,7 +124,6 @@
         grabber.direction = direction;
         grabber.classList.add("grabber");
         grabber.classList.add(name);
-        console.log(name);
         grabber.id = uniqueID + "-grabber" + name;
         return grabber;
     };
@@ -396,7 +395,7 @@
   width: {$store.width}px;
   height: {$store.height}px;
   z-index: {$store.zIndex};
-  outline: {$contentProperties.activeWindow === uniqueID ? '5px solid green' : 'none'};"
+  outline: {$contentProperties.activeWindow === uniqueID ? '10px double green' : 'none'};"
   use:draggable
   use:resize
   use:scalability
@@ -423,6 +422,7 @@
   :root {
     --blue: #5cadff;
     --darker-blue: #1e5791;
+    --active-green: green;
   }
 
   :global(.grabber) {

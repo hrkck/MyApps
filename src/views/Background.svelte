@@ -8,6 +8,7 @@
   style="
   background-position: {$store.x}px {$store.y}px; 
   background-size: {100 * $store.scale}px {100 * $store.scale}px;
+  background-color: {$store.backgroundColor};
   "
 ></div>
 
@@ -21,7 +22,7 @@
     height: 100%;
     padding: 0;
     margin: 0;
-    background: rgb(248, 255, 243);
+    /* background: rgb(248, 255, 243); */
     background-image: radial-gradient(black 1px, transparent 0);
     overflow: hidden;
   }

@@ -1,6 +1,5 @@
 <script>
-  import { contextMenu, removeWindowStore, resetLocalStorage } from "../../../scripts/storage";
-  import Frame from "../../Apps/Frame.svelte";
+  import { contextMenu, removeWindowStore } from "../../../scripts/storage";
 
   let menuItems = [
     { label: "Delete Frame", submenu: [], color: "indianred" }, // Add submenu options as needed
@@ -9,9 +8,7 @@
   function click(event) {
     if (event.target.innerText == "Delete Frame") {
       let frameID = $contextMenu.originalTargetID.split('-',2).join("-")
-      console.log(frameID);
       removeWindowStore(frameID)
-
     }
     $contextMenu.visible = false;
   }

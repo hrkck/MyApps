@@ -21,9 +21,10 @@
     resizeMoveFunc: function (store, event, x, y, width, height) {},
     scaleFunc: function (store, event, x, y, scale) {},
     clickFunc: function (store, event) {
-      console.log("clicked on main content, ");
       // deactivate any active app
-      if ($contentProperties.isAWindowActive) {
+      if($contentProperties.isAWindowActive == "settings"){
+        return;
+      }else if ($contentProperties.isAWindowActive) {
         $contentProperties.isAWindowActive = false;
         let activeAppStore = windowStores[$contentProperties.activeWindow];
         activeAppStore.update((data) => {
@@ -32,6 +33,7 @@
         });
         user.get("windows").get($contentProperties.activeWindow).put({ isActive: false });
         $contentProperties.activeWindow = "";
+        $contentProperties.backgroundColor = "rgb(248, 255, 243)"
       }
     },
   };
