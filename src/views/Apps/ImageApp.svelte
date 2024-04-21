@@ -41,6 +41,8 @@
     backgroundColor: "rgb(214, 255, 185)",
   });
   // @ts-ignore
+
+  // BUGGY CODE BELOW FIX
   $: {
     // make each image also active when main app is active
     $imageAppStore.isActiveDraggable = $mainAppStore.isActive;
@@ -59,8 +61,6 @@
       });
     });
   }
-  $mainAppStore.isActive = $mainAppStore.isActive;
-  // content images store // gundb store
 
   onMount(async () => {
     initializeAppData();
