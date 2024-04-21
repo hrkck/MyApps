@@ -4,7 +4,8 @@
 </script>
 
 <div
-  id="background"
+  id={$store.uniqueID + "-background"}
+  class="background"
   style="
   background-position: {$store.x}px {$store.y}px; 
   background-size: {100 * $store.scale}px {100 * $store.scale}px;
@@ -13,7 +14,7 @@
 ></div>
 
 <style>
-  #background {
+  .background {
     position: absolute;
     backface-visibility: hidden;
     top: 0;

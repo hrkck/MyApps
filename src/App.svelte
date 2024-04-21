@@ -9,7 +9,7 @@
   // Context Menu management
 
   function showContextMenu(event) {
-    // if ($workspaceStore.isAWindowActivated) return;
+    if ($contentProperties.isAWindowActive) return;
     event.preventDefault();
     $contextMenu.x = event.clientX;
     $contextMenu.y = event.clientY;

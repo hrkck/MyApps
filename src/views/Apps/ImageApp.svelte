@@ -281,6 +281,51 @@
     imageObj.src = imageUrl;
   }
 
+  // Function to handle dropped images from web data
+  function handleImageDropFromWeb(htmlData) {
+    // Regular expression to extract Base64 encoded image data
+    const base64Regex = /src="data:image\/jpeg;base64,([^"]*)"/;
+    const match = htmlData.match(base64Regex);
+
+    if (match) {
+      // Extract the Base64 encoded image data
+      const base64Data = "data:image/jpeg;base64," + match[1];
+
+      // Create a new Image object
+      const imageObj = new Image();
+
+      // Onload function to handle image loading
+      imageObj.onload = function () {
+        const key = `ref-img-${nowStr()}`;
+        const imageStore = writable({
+          uniqueID: key,
+          boxShadow: false,
+          keepRatio: true,
+          width: this.naturalWidth,
+          height: this.naturalHeight,
+          ...itemProperties,
+        });
+
+        images = [...images, { imageUrl: base64Data, key, imageStore }];
+
+        // Save image data to GunDB
+        let imageStoreData = get(imageStore);
+        user
+          .get("windows")
+          .get(uniqueID)
+          .get("imageAppData")
+          .get("images")
+          .get(key)
+          .put({ imageUrl: base64Data, imageStoreData: imageStoreData });
+      };
+
+      // Set the src attribute of the Image object to the Base64 data
+      imageObj.src = base64Data;
+    } else {
+      console.log("No image data found in the HTML");
+    }
+  }
+
   // Function to handle pasted text
   function handleTextPaste(text) {
     const key = `ref-text-${nowStr()}`;
@@ -324,8 +369,34 @@
     }
   }
 
+  // Function to handle drop event
+  // Function to handle drop event
+  function handleDrop(event) {
+    event.preventDefault();
+
+    console.log(event);
+    // Check if files are being dropped
+    if (event.dataTransfer.files.length > 0) {
+      // Handle dropped files (images from file system)
+      const file = event.dataTransfer.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target.result;
+        handleImagePaste(imageUrl); // Pass the image data to the existing function for handling pasted images
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Handle dropped image URL (images from web)
+      const htmlData = event.dataTransfer.getData("text/html"); // Get the dropped image URL
+      handleImageDropFromWeb(htmlData); // Pass the URL to the existing function for handling pasted images
+    }
+  }
+
   function clearImages(event) {
     console.log("clear images", event);
+    user.get("windows").get(uniqueID).get("imageAppData").put(null);
+    images = [];
+    texts = [];
   }
 </script>
 
@@ -338,6 +409,8 @@
   class="main-image-app"
   on:mouseenter={() => self.addEventListener("paste", handlePaste)}
   on:mouseleave={() => self.removeEventListener("paste", handlePaste)}
+  on:dragover={(event) => event.preventDefault()}
+  on:drop={handleDrop}
 >
   <button on:click={clearImages}>Delete All Text and Images</button>
 
