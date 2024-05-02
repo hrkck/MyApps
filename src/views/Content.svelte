@@ -6,7 +6,7 @@
   import Frame from "./Apps/Frame.svelte";
   import DraggableResizable from "./DraggableResizable.svelte";
   import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
-  import { getAppIDsInAFrame, getContainingRectangle } from "../scripts/utils";
+  import { deactivateWindow, getAppIDsInAFrame, getContainingRectangle } from "../scripts/utils";
 
   const draggableFunctions = {
     dragStartFunc: function (store, event, x, y) {
@@ -25,15 +25,7 @@
       if($contentProperties.isAWindowActive == "settings"){
         return;
       }else if ($contentProperties.isAWindowActive) {
-        $contentProperties.isAWindowActive = false;
-        let activeAppStore = windowStores[$contentProperties.activeWindow];
-        activeAppStore.update((data) => {
-          data.isActive = false;
-          return data;
-        });
-        user.get("windows").get($contentProperties.activeWindow).put({ isActive: false });
-        $contentProperties.activeWindow = "";
-        $contentProperties.backgroundColor = "rgb(248, 255, 243)"
+        deactivateWindow($contentProperties.activeWindow)
       }
     },
   };

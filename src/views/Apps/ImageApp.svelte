@@ -370,7 +370,6 @@
   }
 
   // Function to handle drop event
-  // Function to handle drop event
   function handleDrop(event) {
     event.preventDefault();
 

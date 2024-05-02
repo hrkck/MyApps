@@ -4,6 +4,7 @@
   import { writable } from "svelte/store";
   import { contentProperties, resetLocalStorage } from "../../scripts/storage";
   import Login from "./Login.svelte";
+  import { deactivateWindow } from "../../scripts/utils";
 
   let isSettingsOpen = false;
   const activeTab = writable("Login/Register/Sync");
@@ -12,6 +13,9 @@
     isSettingsOpen = !isSettingsOpen;
     $contentProperties.backgroundColor = isSettingsOpen ? "rgb(194, 204, 187)": "rgb(248, 255, 243)"
     $contentProperties.isAWindowActive = isSettingsOpen ? "settings" : false;
+    if(!isSettingsOpen){
+      deactivateWindow($contentProperties.activeWindow)
+    }
   }
 
   function handleResetWorkspace(e) {

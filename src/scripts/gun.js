@@ -2,9 +2,9 @@
 import Gun from "gun/gun";
 import "gun/axe";
 import "gun/sea";
-import "gun/lib/radix";
-import "gun/lib/radisk";
-import "gun/lib/store";
+// import "gun/lib/radix";
+// import "gun/lib/radisk";
+// import "gun/lib/store";
 import "gun/lib/rindexed";
 import "gun/lib/webrtc";
 import { generateRandomPassword, generateRandomUsername } from "./utils";

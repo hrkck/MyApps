@@ -14,7 +14,7 @@ export function addWindow(app, x = 0, y = 0) {
     ...app,
     component: "left-blank-for-gundb-storage",
   };
-  console.log('ADDING WINDOW', app, x, y);
+  console.log("ADDING WINDOW", app, x, y);
   addWindowStore(uid, newAppProperties);
   return newAppProperties;
 }
@@ -217,4 +217,20 @@ export function checkContainerBoundaries(parentID) {
       return appData;
     });
   }
+}
+
+export function deactivateWindow(windowID) {
+  if(windowID=="") return;
+  let activeAppStore = windowStores[windowID];
+  activeAppStore.update((data) => {
+    data.isActive = false;
+    return data;
+  });
+  user.get("windows").get(windowID).put({ isActive: false });
+  contentProperties.update(data=>{
+    data.isAWindowActive = false;
+    data.activeWindow = "";
+    data.backgroundColor = "rgb(248, 255, 243)"
+    return data
+  })
 }
