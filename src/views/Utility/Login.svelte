@@ -11,10 +11,13 @@
 
   onMount(async () => {
     // Listen for authentication changes
-    gun.on("auth", () => {
-      console.log("User is authenticated");
+    gun.on("auth", async () => {
+      getUsernameAndPassword();
     });
+    getUsernameAndPassword();
+  });
 
+  async function getUsernameAndPassword() {
     if (user.is) {
       const encryptedAlias = localStorage.getItem("encryptedAlias");
       const encryptedPass = localStorage.getItem("encryptedPass");
@@ -26,7 +29,7 @@
         pass = await SEA.decrypt(encryptedPass, pair);
       }
     }
-  });
+  }
 
   const signUp = () => {
     user.create(alias, pass, async (ack) => {
@@ -71,7 +74,6 @@
           localStorage.setItem("encryptedAlias", encryptedAlias);
           localStorage.setItem("encryptedPass", encryptedPass);
           localStorage.setItem("pair", pairSerialized);
-
         } catch (error) {
           console.error("Error updating credentials:", error);
         }
