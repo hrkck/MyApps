@@ -1,6 +1,6 @@
 <!--  DraggabkeResizable.svelte -->
 <script>
-  import { user } from "../scripts/gun";
+  import { user } from "../scripts/initGun";
   import { contentProperties, windowStores } from "../scripts/storage";
 
   export let dragStartFunc = function (store, event, x, y) {};

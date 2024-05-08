@@ -1,7 +1,7 @@
 <!-- Content.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { initUser, user } from "../scripts/gun";
+  import { initUser, user } from "../scripts/initGun";
   import AppWindow from "./Apps/AppWindow.svelte";
   import Frame from "./Apps/Frame.svelte";
   import DraggableResizable from "./DraggableResizable.svelte";

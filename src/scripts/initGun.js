@@ -2,9 +2,9 @@
 import Gun from "gun/gun";
 import "gun/axe";
 import "gun/sea";
-// import "gun/lib/radix";
-// import "gun/lib/radisk";
-// import "gun/lib/store";
+import "gun/lib/radix";
+import "gun/lib/radisk";
+import "gun/lib/store";
 import "gun/lib/rindexed";
 import "gun/lib/webrtc";
 import { generateRandomPassword, generateRandomUsername } from "./utils";
@@ -42,8 +42,6 @@ export const initUser = async () => {
         const pair = JSON.parse(pairSerialized); // Deserialize the pair
         const alias = await SEA.decrypt(encryptedAlias, pair);
         const pass = await SEA.decrypt(encryptedPass, pair);
-
-        // console.log(alias, pass);
         // Authenticate
         user.auth(alias, pass, (ack) => {
           if (ack.err) {
@@ -64,9 +62,9 @@ export const initUser = async () => {
       const pair = await SEA.pair();
 
       // Encrypt credentials and store them along with the pair
-      const encryptedAlias = await SEA.encrypt(alias, pair);
-      const encryptedPass = await SEA.encrypt(pass, pair);
-      const pairSerialized = JSON.stringify(pair); // Serialize the pair for storage
+      let encryptedAlias = await SEA.encrypt(alias, pair);
+      let encryptedPass = await SEA.encrypt(pass, pair);
+      let pairSerialized = JSON.stringify(pair); // Serialize the pair for storage
 
       localStorage.setItem("encryptedAlias", encryptedAlias);
       localStorage.setItem("encryptedPass", encryptedPass);

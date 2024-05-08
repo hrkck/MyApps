@@ -115,6 +115,7 @@
   .content-column {
     flex: 3;
     padding: 20px;
+    overflow-y: scroll;
   }
 
   button {

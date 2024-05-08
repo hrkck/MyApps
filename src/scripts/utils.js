@@ -1,6 +1,6 @@
 // utils.js
 import { get } from "svelte/store";
-import { user } from "./gun";
+import { user } from "./initGun";
 import { addWindowStore, contentProperties, windowStores } from "./storage";
 
 export function addWindow(app, x = 0, y = 0) {

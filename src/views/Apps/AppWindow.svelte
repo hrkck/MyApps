@@ -6,7 +6,7 @@
   import DraggableResizable from "../DraggableResizable.svelte";
   import { checkBoundaries, getAppIDsInAFrame } from "../../scripts/utils";
   import AppPreview from "./AppPreview.svelte";
-  import { user } from "../../scripts/gun";
+  import { user } from "../../scripts/initGun";
 
   export let uniqueID;
   let draggableComponent; // ref to draggable component

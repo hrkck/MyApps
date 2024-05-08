@@ -1,7 +1,7 @@
 <!-- Login.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { gun, user } from "../../scripts/gun";
+  import { gun, user } from "../../scripts/initGun";
   import SEA from "gun/sea";
 
   let alias = "";

@@ -4,7 +4,7 @@
   import { nowStr } from "../../scripts/utils";
   import DraggableResizable from "../DraggableResizable.svelte";
   import Background from "../Background.svelte";
-  import { user } from "../../scripts/gun";
+  import { user } from "../../scripts/initGun";
   import { onMount } from "svelte";
 
   // @ts-nocheck
@@ -109,7 +109,7 @@
       .get("images")
       .map()
       .once(async (data, key) => {
-        if (data && data.imageUrl) {
+        if (data && data.imageUrl && data.imageUrl != 'd') {
           if (images.some((img) => img.key === key)) return;
           try {
             const imageStoreData = await fetchStoreData("images", key, "imageStoreData");
@@ -393,9 +393,15 @@
 
   function clearImages(event) {
     console.log("clear images", event);
-    user.get("windows").get(uniqueID).get("imageAppData").put(null);
+    user.get("windows").get(uniqueID).get("imageAppData").get('images').map().get('imageUrl').put(null)
+    user.get("windows").get(uniqueID).get("imageAppData").get('images').map().get('imageStoreData').put(null)
+    user.get("windows").get(uniqueID).get("imageAppData").get('images').map().once((data,key)=>{
+      user.get("windows").get(uniqueID).get("imageAppData").get('images').get(key).put(null)
+    })
+    user.get("windows").get(uniqueID).get("imageAppData").get('images').put(null)
+    user.get("windows").get(uniqueID).get("imageAppData").put(null)
     images = [];
-    texts = [];
+    // texts = [];
   }
 </script>
 

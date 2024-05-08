@@ -5,16 +5,17 @@
   import AppWindowContext from "./AppWindowContext.svelte";
   import FrameContext from "./FrameContext.svelte";
   import { afterUpdate } from "svelte";
+  import ImageAppContextMenu from "./ImageAppContextMenu.svelte";
 
-  let contextComponent = loadContext($contextMenu.originalTargetID)
+  let contextComponent;// = loadContext($contextMenu.originalTargetID)
 
   afterUpdate(()=>{
     contextComponent = loadContext($contextMenu.originalTargetID)
   })
 
   function loadContext(originalTargetID){
-    // console.log(originalTargetID.split('-')[0]);
-    // console.log(originalTargetID);
+    console.log(originalTargetID.split('-')[0]);
+    console.log(originalTargetID);
     switch (originalTargetID.split('-')[0]) {
       case 'background':
         return ContentAreaContext
@@ -25,6 +26,8 @@
       case 'frame':
         return FrameContext
         break;
+      case 'imageReferenceApp':
+        return ImageAppContextMenu
       default:
         return AppWindowContext;
         break;
