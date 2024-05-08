@@ -1,12 +1,12 @@
 // gun.js
 import Gun from "gun/gun";
-import "gun/axe";
 import "gun/sea";
+import "gun/lib/webrtc";
 import "gun/lib/radix";
 import "gun/lib/radisk";
 import "gun/lib/store";
 import "gun/lib/rindexed";
-import "gun/lib/webrtc";
+import "gun/axe";
 import { generateRandomPassword, generateRandomUsername } from "./utils";
 import { addWindowStore } from "./storage";
 
@@ -23,7 +23,6 @@ function initGunDB() {
     .map()
     .once((data) => {
       if (data && data.uniqueID) {
-        // console.log(data);
         addWindowStore(data.uniqueID, { ...data, _: "unset-for-svelte-store" });
       }
     });

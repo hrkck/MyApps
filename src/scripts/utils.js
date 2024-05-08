@@ -20,13 +20,11 @@ export function addWindow(app, x = 0, y = 0) {
     ...app,
     component: "left-blank-for-gundb-storage",
   };
-  // console.log("ADDING WINDOW", app, x, y);
   addWindowStore(uid, newAppProperties);
   return newAppProperties;
 }
 
 export function addWindowGroup(appGroup, startX = 0, startY = 0, spacing = 120) {
-  console.log(appGroup);
   let currentX = startX;
   let currentY = startY;
 
@@ -38,12 +36,13 @@ export function addWindowGroup(appGroup, startX = 0, startY = 0, spacing = 120) 
   });
   appGroup.contents.forEach((content) => {
     // Add window with adjusted x position
-    addWindow({
+    let createdAppProperties = addWindow({
       ...content,
       x: currentX,
       y: currentY,
       isInsideFrameID: frameProperties.uniqueID,
     });
+    // console.log(createdAppProperties.isInsideFrameID);
     // Increment currentX for next window
     currentX += spacing;
   });

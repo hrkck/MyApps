@@ -29,6 +29,7 @@
           appData.y += y;
           return appData;
         });
+        appStore = appStore // force trigger reactivity (? does it do anything)
       }
     },
     dragEndFunc: function (s, event, x, y) {

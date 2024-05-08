@@ -44,7 +44,7 @@
         $store.x += dx / $store.contentScale;
         $store.y += dy / $store.contentScale;
       }
-      dragMoveFunc(store, event, dx / $store.contentScale, dy / $store.contentScale);
+      dragMoveFunc(store, event, dx / $store.contentScale || 0, dy / $store.contentScale || 0);
     }
 
     function onStart(event) {

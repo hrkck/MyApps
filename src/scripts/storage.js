@@ -89,9 +89,9 @@ export let windowStores = {};
 
 // Function to add a new window store to the windowStores map
 export function addWindowStore(uniqueID, properties) {
+  if(Object.keys(windowStores).includes(uniqueID)) return;
   const newStore = createWindowStore(uniqueID, properties);
   windowStores[uniqueID] = newStore;
-  windowStores = { ...windowStores };
   addWindowToContent(uniqueID); // Also add to the content's window list
   user
     .get("windows")

@@ -36,7 +36,6 @@
 
   function handleSubmenuClick(option, type) {
     if (type == "singleApp") {
-        console.log(option, type);
       addWindow(
         applications.find((app) => app.title == option),
         $contextMenu.screenX,
@@ -48,7 +47,6 @@
         $contextMenu.screenX,
         $contextMenu.screenY
       );
-      // console.log("DRRR... MUST ADD APP GROUP.");
     }
 
     $contextMenu.visible = false;
