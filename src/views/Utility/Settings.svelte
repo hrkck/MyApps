@@ -6,7 +6,7 @@
   import Login from "./Login.svelte";
   import { deactivateWindow } from "../../scripts/utils";
 
-  let isSettingsOpen = false;
+  export let isSettingsOpen = false;
   const activeTab = writable("Login/Register/Sync");
 
   function handleToggleSettings(e) {

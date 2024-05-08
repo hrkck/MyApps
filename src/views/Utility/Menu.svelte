@@ -1,16 +1,17 @@
 <!-- Menu.svelte -->
 <script>
+  import { contentProperties } from "../../scripts/storage";
   // import SearchApplication from './SearchApplication.svelte';
   // import SelectApplication from './SelectApplication.svelte';
   import Settings from "./Settings.svelte";
-
+  let isSettingsOpen = $contentProperties.isAWindowActive == "settings";
   // export let applications;
 </script>
 
 <div id="header">
   <!-- <SelectApplication {applications}/> -->
   <!-- <SearchApplication {applications}/> -->
-  <Settings />
+  <Settings {isSettingsOpen}/>
 </div>
 
 <style>
