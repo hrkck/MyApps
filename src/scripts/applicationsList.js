@@ -48,13 +48,13 @@ export const applications = [
     component: Frame,
     ...FrameProperties,
   },
-  // {
-  //   id: 2,
-  //   name: "linkApp",
-  //   title: "Link App",
-  //   component: LinkApp,
-  //   ...AppProperties,
-  // },
+  {
+    id: 2,
+    name: "linkApp",
+    title: "Link App",
+    component: LinkApp,
+    ...AppProperties,
+  },
   // {
   //   id: 3,
   //   name: "textEditor",
@@ -82,10 +82,11 @@ export const applications = [
 const linkAppWidth = 80;
 const linkAppHeight = 80;
 const LinkAppData = {
-  id: 6,
+  id: 2,
   component: LinkApp,
+  name: "linkApp",
   title: "Link App",
-  name: "Link App",
+  ...AppProperties,
   width: linkAppWidth,
   height: linkAppHeight,
 };
@@ -98,35 +99,35 @@ export const applicationGroups = [
     contents: [
       {
         ...LinkAppData,
-        windowIconUrl: "https://google.com",
+        linkUrl: "https://google.com",
       },
       {
         ...LinkAppData,
-        windowIconUrl: "https://web.telegram.org",
+        linkUrl: "https://web.telegram.org",
       },
       {
         ...LinkAppData,
-        windowIconUrl: "https://web.whatsapp.com",
+        linkUrl: "https://web.whatsapp.com",
       },
       {
         ...LinkAppData,
-        windowIconUrl: "https://youtube.com",
+        linkUrl: "https://youtube.com",
       },
       {
         ...LinkAppData,
-        windowIconUrl: "https://translate.google.com",
+        linkUrl: "https://translate.google.com",
       },
       {
         ...LinkAppData,
-        windowIconUrl: "https://earth.google.com",
+        linkUrl: "https://earth.google.com",
       },
       {
         ...LinkAppData,
-        windowIconUrl: "https://blender.org",
+        linkUrl: "https://blender.org",
       },
       {
         ...LinkAppData,
-        windowIconUrl: "https://chat.openai.com",
+        linkUrl: "https://chat.openai.com",
       },
     ],
   },

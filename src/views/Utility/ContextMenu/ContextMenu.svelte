@@ -14,8 +14,8 @@
   })
 
   function loadContext(originalTargetID){
-    console.log(originalTargetID.split('-')[0]);
-    console.log(originalTargetID);
+    // console.log(originalTargetID.split('-')[0]);
+    // console.log(originalTargetID);
     switch (originalTargetID.split('-')[0]) {
       case 'background':
         return ContentAreaContext

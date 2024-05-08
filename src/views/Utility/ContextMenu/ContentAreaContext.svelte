@@ -1,7 +1,7 @@
 <script>
   import { applicationGroups, applications } from "../../../scripts/applicationsList";
   import { contextMenu, resetLocalStorage } from "../../../scripts/storage";
-  import { addWindow } from "../../../scripts/utils";
+  import { addWindow, addWindowGroup } from "../../../scripts/utils";
 
   let menuItems = [
     {
@@ -43,12 +43,12 @@
         $contextMenu.screenY
       );
     } else if (type == "groupApp") {
-      // addWindowGroup(
-      //   applicationGroups.find((app) => app.groupName == option),
-      //   screenContextX,
-      //   screenContextY
-      // );
-      console.log("DRRR... MUST ADD APP GROUP.");
+      addWindowGroup(
+        applicationGroups.find((app) => app.groupName == option),
+        $contextMenu.screenX,
+        $contextMenu.screenY
+      );
+      // console.log("DRRR... MUST ADD APP GROUP.");
     }
 
     $contextMenu.visible = false;

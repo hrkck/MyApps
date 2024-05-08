@@ -2,9 +2,15 @@
 import { get } from "svelte/store";
 import { user } from "./initGun";
 import { addWindowStore, contentProperties, windowStores } from "./storage";
+import { applications } from "./applicationsList";
 
 export function addWindow(app, x = 0, y = 0) {
-  const uid = app.name + "-" + nowStr();
+  let uid = app.name + "-" + nowStr();
+  let additional_identifier = 0;
+  while (`${uid}-${additional_identifier}` in get(contentProperties).windowList) {
+    additional_identifier += 1;
+  }
+  uid = `${uid}-${additional_identifier}`;
   const newAppProperties = {
     uniqueID: uid,
     x: x,
@@ -14,40 +20,35 @@ export function addWindow(app, x = 0, y = 0) {
     ...app,
     component: "left-blank-for-gundb-storage",
   };
-  console.log("ADDING WINDOW", app, x, y);
+  // console.log("ADDING WINDOW", app, x, y);
   addWindowStore(uid, newAppProperties);
   return newAppProperties;
 }
 
-// export function addWindowGroup(
-//   appGroup,
-//   startX = 0,
-//   startY = 0,
-//   spacing = 120
-// ) {
-//   let currentX = startX;
-//   let currentY = startY;
+export function addWindowGroup(appGroup, startX = 0, startY = 0, spacing = 120) {
+  console.log(appGroup);
+  let currentX = startX;
+  let currentY = startY;
 
-//   // add a frame
-//   let frameId = addWindow({
-//     id: 1,
-//     x: startX,
-//     y: startY,
-//   });
-//   appGroup.contents.forEach((content) => {
-//     // Add window with adjusted x position
-//     setTimeout(() => {
-//       addWindow({
-//         ...content,
-//         x: currentX,
-//         y: currentY,
-//         isInsideFrameId: frameId,
-//       });
-//       // Increment currentX for next window
-//       currentX += spacing;
-//     }, 1); // our app is so fast so wait 1 ms
-//   });
-// }
+  // add a frame
+  let frameProperties = addWindow({
+    ...applications[0],
+    x: startX,
+    y: startY,
+  });
+  appGroup.contents.forEach((content) => {
+    // Add window with adjusted x position
+    addWindow({
+      ...content,
+      x: currentX,
+      y: currentY,
+      isInsideFrameID: frameProperties.uniqueID,
+    });
+    // Increment currentX for next window
+    currentX += spacing;
+  });
+  checkBoundaries(frameProperties.uniqueID);
+}
 
 export const nowStr = () => new Date().getTime();
 
@@ -220,17 +221,17 @@ export function checkContainerBoundaries(parentID) {
 }
 
 export function deactivateWindow(windowID) {
-  if(windowID=="") return;
+  if (windowID == "") return;
   let activeAppStore = windowStores[windowID];
   activeAppStore.update((data) => {
     data.isActive = false;
     return data;
   });
   user.get("windows").get(windowID).put({ isActive: false });
-  contentProperties.update(data=>{
+  contentProperties.update((data) => {
     data.isAWindowActive = false;
     data.activeWindow = "";
-    data.backgroundColor = "rgb(248, 255, 243)"
-    return data
-  })
+    data.backgroundColor = "rgb(248, 255, 243)";
+    return data;
+  });
 }

@@ -123,11 +123,13 @@
       on:keypress
     />
   </div> -->
-  <div id={uniqueID+"-appcontent"} class="app-content" style="" class:pointer-events={!$store.isActive}>
+  <div id={uniqueID+"-appcontent"} class="app-content" style="" >
     {#if showIcon}
-      <AppPreview />
+      <AppPreview  {uniqueID} />
     {:else}
-      <svelte:component this={appComponent} {uniqueID} />
+      <div class:pointer-events={!$store.isActive}>
+        <svelte:component this={appComponent} {uniqueID} />
+      </div>
     {/if}
   </div>
 </DraggableResizable>
