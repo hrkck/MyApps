@@ -18,9 +18,9 @@
 
   // bind with gundb init
   const imageAppStore = writable({
-    uniqueID: "imageReferenceAppContent-" + uniqueID,
+    uniqueID: uniqueID+"-imageReferenceAppContent",
     hideOverflow: false,
-    dragEventTarget: "mainDiv-imageReferenceAppContent-" + uniqueID,
+    dragEventTarget: uniqueID+"-imageReferenceAppContent-mainDiv",
     boxShadow: false,
     useWindow: false,
     scalable: true,
@@ -415,7 +415,7 @@
 <!--  -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  id={"mainDiv-" + $imageAppStore.uniqueID}
+  id={$imageAppStore.uniqueID+"-mainDiv"}
   class="main-image-app"
   on:mouseenter={() => self.addEventListener("paste", handlePaste)}
   on:mouseleave={() => self.removeEventListener("paste", handlePaste)}

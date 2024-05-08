@@ -38,7 +38,7 @@
   }
 </script>
 
-<div class="link-container">
+<div class="link-container" id={$mainAppStore.uniqueID+"-appPreview"}>
   {#if isLinkApp}
     <a class="icon-link" href={$iconData.linkUrl} >
       <img src={$iconData.iconUrl} alt="Icon" class="on-interactive-icon icon" />

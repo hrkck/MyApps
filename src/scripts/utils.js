@@ -7,10 +7,10 @@ import { applications } from "./applicationsList";
 export function addWindow(app, x = 0, y = 0) {
   let uid = app.name + "-" + nowStr();
   let additional_identifier = 0;
-  while (`${uid}-${additional_identifier}` in get(contentProperties).windowList) {
+  while (`${uid}_${additional_identifier}` in get(contentProperties).windowList) {
     additional_identifier += 1;
   }
-  uid = `${uid}-${additional_identifier}`;
+  uid = `${uid}_${additional_identifier}`;
   const newAppProperties = {
     uniqueID: uid,
     x: x,
