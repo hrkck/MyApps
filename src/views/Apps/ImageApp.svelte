@@ -18,9 +18,9 @@
 
   // bind with gundb init
   const imageAppStore = writable({
-    uniqueID: "image-app-content-" + uniqueID,
+    uniqueID: "imageReferenceAppContent-" + uniqueID,
     hideOverflow: false,
-    dragEventTarget: "mainDiv-image-app-content-" + uniqueID,
+    dragEventTarget: "mainDiv-imageReferenceAppContent-" + uniqueID,
     boxShadow: false,
     useWindow: false,
     scalable: true,
@@ -422,7 +422,11 @@
   on:dragover={(event) => event.preventDefault()}
   on:drop={handleDrop}
 >
+<div class="info-area">
+
   <button on:click={clearImages}>Delete All Text and Images</button>
+  <span> Use CTRL + V or CMD + V (mac) to paste clipboard data</span>
+</div>
 
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="draggable-area">
@@ -472,7 +476,7 @@
   }
   .draggable-area {
     position: absolute;
-
+    overflow: hidden;
     height: 100%;
     width: 100%;
   }

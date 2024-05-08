@@ -26,8 +26,8 @@
       case 'frame':
         return FrameContext
         break;
-      case 'imageReferenceApp':
-        return ImageAppContextMenu
+      // case 'imageReferenceAppContent':
+      //   return ImageAppContextMenu
       default:
         return AppWindowContext;
         break;

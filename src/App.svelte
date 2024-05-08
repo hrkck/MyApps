@@ -9,8 +9,8 @@
   // Context Menu management
 
   function showContextMenu(event) {
-    // if ($contentProperties.isAWindowActive) return;
     event.preventDefault();
+    if ($contentProperties.isAWindowActive) return;
     $contextMenu.x = event.clientX;
     $contextMenu.y = event.clientY;
     // set screenContextX and Y values

@@ -1,17 +1,14 @@
 <script>
+  // @ts-ignore
   import { contextMenu, removeWindowStore } from "../../../scripts/storage";
 
-  let menuItems = [
-    { label: "Paste Clipboard", submenu: [], color: "white" },
-    { label: "Delete App Window", submenu: [], color: "indianred" }, // Add submenu options as needed
-  ];
+  let menuItems = [{ label: "Paste Clipboard", submenu: [], color: "white" }];
 
   function click(event) {
     if (event.target.innerText == "Paste Clipboard") {
       // trigger paste event
-    }else if (event.target.innerText == "Delete App Window") {
-      let appId = $contextMenu.originalTargetID.split("-", 2).join("-");
-      removeWindowStore(appId);
+      console.log("trigger paste event");
+      triggerPasteEvent();
     }
     $contextMenu.visible = false;
   }

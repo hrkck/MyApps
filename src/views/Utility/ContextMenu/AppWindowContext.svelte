@@ -8,6 +8,7 @@
   function click(event) {
     if (event.target.innerText == "Delete App Window") {
       let appId = $contextMenu.originalTargetID.split('-',2).join("-")
+      console.log(appId);
       removeWindowStore(appId)
     }
     $contextMenu.visible = false;
