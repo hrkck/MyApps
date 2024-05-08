@@ -400,8 +400,13 @@
     })
     user.get("windows").get(uniqueID).get("imageAppData").get('images').put(null)
     user.get("windows").get(uniqueID).get("imageAppData").put(null)
+
+    user.get("windows").get(uniqueID).get("imageAppData").get('texts').map().once((data,key)=>{
+      user.get("windows").get(uniqueID).get("imageAppData").get('texts').get(key).put(null)
+    })
+
     images = [];
-    // texts = [];
+    texts = [];
   }
 </script>
 
