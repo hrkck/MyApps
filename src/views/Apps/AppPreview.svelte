@@ -109,5 +109,6 @@
     align-items: center;
     justify-content: center;
     border: 1px solid black;
+    cursor: pointer;
   }
 </style>
