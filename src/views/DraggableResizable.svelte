@@ -91,9 +91,7 @@
     }
 
     target.addEventListener("mousedown", onStart);
-    target.addEventListener("touchstart", onStart, {
-      passive: false,
-    });
+    target.addEventListener("touchstart", onStart, { passive: false });
 
     return {
       destroy() {
@@ -121,13 +119,13 @@
     const grabbers = [];
 
     function createGrabber(direction, name) {
-        const grabber = document.createElement("div");
-        grabber.direction = direction;
-        grabber.classList.add("grabber");
-        grabber.classList.add(name);
-        grabber.id = uniqueID + "-grabber" + name;
-        return grabber;
-    };
+      const grabber = document.createElement("div");
+      grabber.direction = direction;
+      grabber.classList.add("grabber");
+      grabber.classList.add(name);
+      grabber.id = uniqueID + "-grabber" + name;
+      return grabber;
+    }
 
     const right = createGrabber("east", "right");
     const left = createGrabber("west", "left");
@@ -138,13 +136,13 @@
     let top, topLeft, topRight;
 
     if (!$store.hideHeaderResize) {
-        top = createGrabber("north", "top");
-        topLeft = createGrabber("northwest", "top-left");
-        topRight = createGrabber("northeast", "top-right");
+      top = createGrabber("north", "top");
+      topLeft = createGrabber("northwest", "top-left");
+      topRight = createGrabber("northeast", "top-right");
 
-        grabbers.push(right, left, top, bottom, topLeft, topRight, bottomLeft, bottomRight);
+      grabbers.push(right, left, top, bottom, topLeft, topRight, bottomLeft, bottomRight);
     } else {
-        grabbers.push(right, left, bottom, bottomLeft, bottomRight);
+      grabbers.push(right, left, bottom, bottomLeft, bottomRight);
     }
 
     let active = null,
