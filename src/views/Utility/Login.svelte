@@ -4,6 +4,10 @@
   import { gun, user } from "../../scripts/initGun";
   import SEA from "gun/sea";
 
+  export let handleToggleSettings = () => {
+    console.log("no handleToggleSettings function implemented");
+  };
+
   let alias = "";
   let pass = "";
   let showPassword = false; // State variable to toggle password visibility
@@ -55,30 +59,38 @@
     });
   };
 
-  const signIn = () => {
-    user.auth(alias, pass, async (ack) => {
-      if (ack.err) {
-        console.error("Sign-in error:", ack.err);
-        // Handle sign-in error
-      } else {
-        console.log("Sign-in successful:", ack);
-        // Proceed with user session initialization
+  const signIn = async () => {
+    try {
+      const success = await new Promise((resolve, reject) => {
+        user.auth(alias, pass, async (ack) => {
+          if (ack.err) {
+            console.error("Sign-in error:", ack.err);
+            // Handle sign-in error
+            reject(ack.err);
+          } else {
+            console.log("Sign-in successful:", ack);
+            // Proceed with user session initialization
+            resolve(true);
+          }
+        });
+      });
 
-        // Update localStorage with the new encrypted username, password, and pair
-        try {
-          const pair = await SEA.pair();
-          const encryptedAlias = await SEA.encrypt(alias, pair);
-          const encryptedPass = await SEA.encrypt(pass, pair);
-          const pairSerialized = JSON.stringify(pair);
+      if (success) {
+        const pair = await SEA.pair();
+        const encryptedAlias = await SEA.encrypt(alias, pair);
+        const encryptedPass = await SEA.encrypt(pass, pair);
+        const pairSerialized = JSON.stringify(pair);
 
-          localStorage.setItem("encryptedAlias", encryptedAlias);
-          localStorage.setItem("encryptedPass", encryptedPass);
-          localStorage.setItem("pair", pairSerialized);
-        } catch (error) {
-          console.error("Error updating credentials:", error);
-        }
+        localStorage.setItem("encryptedAlias", encryptedAlias);
+        localStorage.setItem("encryptedPass", encryptedPass);
+        localStorage.setItem("pair", pairSerialized);
+
+        handleToggleSettings();
       }
-    });
+    } catch (error) {
+      console.error("Error during sign-in:", error);
+      // Handle error
+    }
   };
 
   // Function to toggle password visibility
@@ -93,7 +105,7 @@
   };
 
   // Prevent form submission default action
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     signIn();
   };

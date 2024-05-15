@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
-
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 const moduleExclude = match => {
   const m = id => id.indexOf(match) > -1
@@ -34,6 +34,7 @@ export default defineConfig({
   },
   plugins: [
     moduleExclude('text-encoding'),
-    svelte()
+    svelte(),
+    basicSsl(),
   ],
 })

@@ -1,10 +1,11 @@
 <!-- Menu.svelte -->
 <script>
+  import { writable } from "svelte/store";
   import { contentProperties } from "../../scripts/storage";
   // import SearchApplication from './SearchApplication.svelte';
   // import SelectApplication from './SelectApplication.svelte';
   import Settings from "./Settings.svelte";
-  let isSettingsOpen = $contentProperties.isAWindowActive == "settings";
+  let isSettingsOpen = writable($contentProperties.isAWindowActive == "settings");
   // export let applications;
 </script>
 

@@ -23,7 +23,7 @@
 
     function onMove(event) {
       if (resizing) return;
-      console.log($contextMenu.visible);
+      event.preventDefault();
       isDragging = true;
 
       let dx, dy;
@@ -249,67 +249,131 @@
   // zoom functionality
   // https://stackoverflow.com/a/3151987
   const scaleStep = 0.05; // Adjust the scaling step for smoother zoom
-  function scalability(element) {
-    if (!$store.scalable) return;
+  function scalability(node) {
+    let initialDistance = 0;
+    let isScaling = false;
 
-    if ($store.useWindow) {
-      window.addEventListener("wheel", changeScale, { passive: false });
-    } else {
-      element.addEventListener("wheel", changeScale);
-    }
-
-    let target;
-    switch ($store.dragEventTarget) {
-      case "window":
-        window.addEventListener("wheel", changeScale, { passive: false });
-        break;
-      default:
-        target = target = document.getElementById($store.dragEventTarget);
-        target.addEventListener("wheel", changeScale);
-        break;
-    }
-
-    function changeScale(event) {
+    function changeScale(event, zoom) {
       if ($contentProperties.isAWindowActive && !$store.isActiveDraggable) return;
-      event.preventDefault();
 
-      // Get mouse offset relative to the parent of the scalable area
-      const rect = element.parentElement.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
-
-      // Normalize mouse wheel to +1 or -1
-      const wheel = event.deltaY < 0 ? 1 : -1;
-
-      // Compute zoom factor
-      const zoom = Math.exp(wheel * scaleStep);
-
-      // Compute the new scale
+      const rect = node.parentElement.getBoundingClientRect();
+      const mouseX = initialDistance != 0 ? 1 : event.clientX - rect.left;
+      const mouseY = initialDistance != 0 ? 1 : event.clientY - rect.top;
+      // window.alert(`${mouseX},${mouseY}`);
       let newScale = $store.scale * zoom;
 
-      // Ensure the scale doesn't get too small or too large
       if (newScale > 0.05 && newScale < 7) {
-        // Adjust contentX and contentY to keep the mouse point constant
-        // The formula here is a bit different from Stack overflow answer!
-        // We first take the delta of content to the mouse position multiplied by the ratio of scales,
-        // then add the mouse position to the content. This value is then _assigned_ (not incremented) to the new value of the content (for X and Y)
         $store.x =
           ($store.x - mouseX / $store.contentScale) * (newScale / $store.scale) +
           mouseX / $store.contentScale;
         $store.y =
           ($store.y - mouseY / $store.contentScale) * (newScale / $store.scale) +
           mouseY / $store.contentScale;
-
-        // Apply the new scale
         $store.scale = newScale;
         scaleFunc(store, event, $store.x, $store.y, $store.scale);
       }
     }
 
+    function onMouseWheel(event) {
+      if (isScaling || isDragging || resizing) return;
+      event.preventDefault();
+
+      const wheel = event.deltaY < 0 ? 1 : -1;
+      const zoom = Math.exp(wheel * scaleStep);
+      changeScale(event, zoom);
+    }
+
+    function onTouchStart(event) {
+      if (event.touches.length === 2) {
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        initialDistance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
+      }
+    }
+
+    function onTouchMove(event) {
+      if (event.touches.length === 2) {
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        const currentDistance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
+
+        const delta = (currentDistance - initialDistance) * scaleStep * 0.1;
+        const zoom = Math.exp(delta);
+
+        changeScale(event, zoom || 1);
+
+        initialDistance = currentDistance;
+      }
+    }
+
+    function onTouchEnd(event) {
+      initialDistance = 0;
+    }
+
+    function handleDragStart(event) {
+      if (($contentProperties.isAWindowActive && !$store.isActiveDraggable) || $contextMenu.visible)
+        return;
+      event.stopPropagation();
+      isScaling = true;
+    }
+
+    function handleDragEnd(event) {
+      isScaling = false;
+    }
+
+    if ($store.useWindow) {
+      window.addEventListener("wheel", onMouseWheel, { passive: false });
+    } else {
+      node.addEventListener("wheel", onMouseWheel);
+      node.addEventListener("mousedown", handleDragStart);
+      window.addEventListener("mouseup", handleDragEnd);
+    }
+
+    window.addEventListener("touchstart", onTouchStart);
+    window.addEventListener("touchmove", onTouchMove);
+    window.addEventListener("touchend", onTouchEnd);
+
+    // Adding wheel event listener to the target element
+    let target;
+    switch ($store.dragEventTarget) {
+      case "window":
+        window.addEventListener("wheel", onMouseWheel, { passive: false });
+        break;
+      case "node":
+        target = node;
+        target.addEventListener("wheel", onMouseWheel);
+        break;
+      default:
+        target = document.getElementById($store.dragEventTarget);
+        console.log($store.uniqueID);
+        console.log($store.dragEventTarget);
+        target.addEventListener("wheel", onMouseWheel);
+        break;
+    }
+
     return {
       destroy() {
-        window.removeEventListener("wheel", changeScale);
-        element.removeEventListener("wheel", changeScale);
+        if ($store.useWindow) {
+          window.removeEventListener("wheel", onMouseWheel);
+        } else {
+          node.removeEventListener("wheel", onMouseWheel);
+          node.removeEventListener("mousedown", handleDragStart);
+          window.removeEventListener("mouseup", handleDragEnd);
+        }
+        window.removeEventListener("touchstart", onTouchStart);
+        window.removeEventListener("touchmove", onTouchMove);
+        window.removeEventListener("touchend", onTouchEnd);
+
+        // Remove wheel event listener from the target element
+        if (target) {
+          target.removeEventListener("wheel", onMouseWheel);
+        }
       },
     };
   }

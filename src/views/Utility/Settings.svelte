@@ -5,15 +5,16 @@
   import { contentProperties, resetLocalStorage } from "../../scripts/storage";
   import Login from "./Login.svelte";
   import { deactivateWindow } from "../../scripts/utils";
+  import SEA from "gun/sea";
 
-  export let isSettingsOpen = false;
+  export let isSettingsOpen = writable(false);
   const activeTab = writable("Login/Register/Sync");
 
   function handleToggleSettings(e) {
-    isSettingsOpen = !isSettingsOpen;
-    $contentProperties.backgroundColor = isSettingsOpen ? "rgb(194, 204, 187)": "rgb(248, 255, 243)"
-    $contentProperties.isAWindowActive = isSettingsOpen ? "settings" : false;
-    if(!isSettingsOpen){
+    $isSettingsOpen = !$isSettingsOpen;
+    $contentProperties.backgroundColor = $isSettingsOpen ? "rgb(194, 204, 187)": "rgb(248, 255, 243)"
+    $contentProperties.isAWindowActive = $isSettingsOpen ? "settings" : false;
+    if(!$isSettingsOpen){
       deactivateWindow($contentProperties.activeWindow)
     }
   }
@@ -29,7 +30,7 @@
 
 <div id="settings-button">
   <button on:click={handleToggleSettings} class="gear-button">&#x2699;</button>
-  {#if isSettingsOpen}
+  {#if $isSettingsOpen}
     <div id="settings-background">
       <div id="settings-window">
         <div class="nav-column">
@@ -42,7 +43,7 @@
         </div>
         <div class="content-column">
           {#if $activeTab === "Login/Register/Sync"}
-            <Login />
+            <Login {handleToggleSettings}/>
             <!-- <p>Login/Sync</p> -->
           {/if}
           {#if $activeTab === "workspace data"}
