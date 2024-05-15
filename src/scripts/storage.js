@@ -8,7 +8,7 @@ export let contextMenu = writable({
   y: 0,
   screenX: 0,
   screenY: 0,
-  originalTargetID: 'none'
+  originalTargetID: "none",
 });
 // Helper function to initialize and manage local storage-backed Svelte stores
 export function getLocalStorage(key, initialValue) {
@@ -44,7 +44,7 @@ export let contentProperties = getLocalStorage("mainContent", {
   height: 300,
   scale: 1,
   contentScale: 1,
-  backgroundColor: "rgb(248, 255, 243)",
+  backgroundColor: "rgb(241, 247, 255)",
   isInsideFrameID: "",
   zIndex: 1,
   windowList: {},
@@ -89,7 +89,7 @@ export let windowStores = {};
 
 // Function to add a new window store to the windowStores map
 export function addWindowStore(uniqueID, properties) {
-  if(Object.keys(windowStores).includes(uniqueID)) return;
+  if (Object.keys(windowStores).includes(uniqueID)) return;
   const newStore = createWindowStore(uniqueID, properties);
   windowStores[uniqueID] = newStore;
   addWindowToContent(uniqueID); // Also add to the content's window list

@@ -219,6 +219,22 @@ export function checkContainerBoundaries(parentID) {
   }
 }
 
+export function activateWindow(windowID){
+  if (windowID == "") return;
+  let activeAppStore = windowStores[windowID];
+  activeAppStore.update((data) => {
+    data.isActive = true;
+    return data;
+  });
+  user.get("windows").get(windowID).put({ isActive: true });
+  contentProperties.update((data) => {
+    data.isAWindowActive = true;
+    data.activeWindow = windowID;
+    data.backgroundColor = "rgb(199, 205, 213)"
+    return data;
+  });
+}
+
 export function deactivateWindow(windowID) {
   if (windowID == "") return;
   let activeAppStore = windowStores[windowID];
@@ -230,7 +246,7 @@ export function deactivateWindow(windowID) {
   contentProperties.update((data) => {
     data.isAWindowActive = false;
     data.activeWindow = "";
-    data.backgroundColor = "rgb(248, 255, 243)";
+    data.backgroundColor = "rgb(245, 252, 255)";
     return data;
   });
 }

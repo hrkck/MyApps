@@ -18,7 +18,7 @@
     $contextMenu.screenX = (event.clientX - $contentProperties.x) / $contentProperties.scale;
     $contextMenu.screenY = (event.clientY - $contentProperties.y) / $contentProperties.scale;
     $contextMenu.visible = true;
-    $contextMenu.originalTargetID = event.srcElement.id || event.originalTarget.id
+    $contextMenu.originalTargetID = event.srcElement.id || event.originalTarget.id;
   }
 </script>
 
@@ -30,7 +30,7 @@
 
   <!-- right click context menu for adding apps, app groups, reset storage etc. -->
   {#if $contextMenu.visible}
-    <ContextMenu/>
+    <ContextMenu />
   {/if}
   <!-- Add settings button  -->
   <Menu />

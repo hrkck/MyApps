@@ -49,7 +49,11 @@
     }
 
     function onStart(event) {
-      if (($contentProperties.isAWindowActive && !$store.isActiveDraggable) || $contextMenu.visible)
+      if (
+        (event.button != 0 && !event.touches) ||
+        ($contentProperties.isAWindowActive && !$store.isActiveDraggable) ||
+        $contextMenu.visible
+      )
         return;
       event.stopPropagation();
 
@@ -67,6 +71,7 @@
     }
 
     function onEnd(event) {
+      isDragging = false;
       lastTouchX = undefined;
       lastTouchY = undefined;
       window.removeEventListener("mousemove", onMove);
@@ -250,6 +255,8 @@
   // https://stackoverflow.com/a/3151987
   const scaleStep = 0.05; // Adjust the scaling step for smoother zoom
   function scalability(node) {
+    if (!$store.scalable) return;
+
     let initialDistance = 0;
     let isScaling = false;
 
@@ -259,7 +266,6 @@
       const rect = node.parentElement.getBoundingClientRect();
       const mouseX = initialDistance != 0 ? 1 : event.clientX - rect.left;
       const mouseY = initialDistance != 0 ? 1 : event.clientY - rect.top;
-      // window.alert(`${mouseX},${mouseY}`);
       let newScale = $store.scale * zoom;
 
       if (newScale > 0.05 && newScale < 7) {
@@ -277,7 +283,6 @@
     function onMouseWheel(event) {
       if (isScaling || isDragging || resizing) return;
       event.preventDefault();
-
       const wheel = event.deltaY < 0 ? 1 : -1;
       const zoom = Math.exp(wheel * scaleStep);
       changeScale(event, zoom);
@@ -345,14 +350,8 @@
       case "window":
         window.addEventListener("wheel", onMouseWheel, { passive: false });
         break;
-      case "node":
-        target = node;
-        target.addEventListener("wheel", onMouseWheel);
-        break;
       default:
         target = document.getElementById($store.dragEventTarget);
-        console.log($store.uniqueID);
-        console.log($store.dragEventTarget);
         target.addEventListener("wheel", onMouseWheel);
         break;
     }
@@ -427,9 +426,13 @@
   function handleDoubleClick(event) {
     dbclickFunc(store, event);
   }
+
+  // sometimes we want to see if drag event has took place or not
+  // below code was setting isDragging false exclusively after the click is finished and if isDragging was true
+  // however we currently reverted that, now dragging functionality sets isDragging false.
   function handleClick(event) {
     if (isDragging) {
-      isDragging = false;
+      // isDragging = false;
       // console.log("set dragging false");
       return;
     }
@@ -479,7 +482,7 @@
   }
 
   .box-shadow {
-    box-shadow: 5px 10px 8px #252525;
+    box-shadow: 0px 2px 20px #000000;
   }
 
   :root {
@@ -494,35 +497,31 @@
   }
 
   :global(.grabber.right) {
-    width: 5px;
+    width: 10px;
     height: 100%;
-    background: var(--blue);
     right: -5px;
     cursor: col-resize;
     top: 0;
   }
 
   :global(.grabber.left) {
-    width: 5px;
+    width: 10px;
     height: 100%;
-    background: var(--blue);
     left: -5px;
     cursor: col-resize;
     top: 0;
   }
 
   :global(.grabber.top) {
-    height: 5px;
+    height: 10px;
     width: 100%;
-    background: var(--blue);
     top: -5px;
     cursor: row-resize;
   }
 
   :global(.grabber.bottom) {
-    height: 5px;
+    height: 10px;
     width: 100%;
-    background: var(--blue);
     bottom: -5px;
     cursor: row-resize;
   }
@@ -530,7 +529,6 @@
   :global(.grabber.top-left) {
     height: 10px;
     width: 10px;
-    background: var(--darker-blue);
     top: -5px;
     left: -5px;
     cursor: nw-resize;
@@ -540,7 +538,6 @@
   :global(.grabber.top-right) {
     height: 10px;
     width: 10px;
-    background: var(--darker-blue);
     top: -5px;
     right: -5px;
     cursor: ne-resize;
@@ -550,7 +547,6 @@
   :global(.grabber.bottom-left) {
     height: 10px;
     width: 10px;
-    background: var(--darker-blue);
     bottom: -5px;
     left: -5px;
     cursor: sw-resize;
@@ -560,11 +556,18 @@
   :global(.grabber.bottom-right) {
     height: 10px;
     width: 10px;
-    background: var(--darker-blue);
     bottom: -5px;
     right: -5px;
     cursor: se-resize;
     border-radius: 100%;
+  }
+
+  :global(.grabber.top-left:hover),
+  :global(.grabber.top-right:hover),
+  :global(.grabber.bottom-left:hover),
+  :global(.grabber.bottom-right:hover) {
+    height: 20px;
+    width: 20px;
   }
 
   :global(.hide-grabber) {

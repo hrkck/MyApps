@@ -12,10 +12,12 @@
 
   function handleToggleSettings(e) {
     $isSettingsOpen = !$isSettingsOpen;
-    $contentProperties.backgroundColor = $isSettingsOpen ? "rgb(194, 204, 187)": "rgb(248, 255, 243)"
+    $contentProperties.backgroundColor = $isSettingsOpen
+      ? "rgb(199, 205, 213)"
+      : "rgb(245, 252, 255)";
     $contentProperties.isAWindowActive = $isSettingsOpen ? "settings" : false;
-    if(!$isSettingsOpen){
-      deactivateWindow($contentProperties.activeWindow)
+    if (!$isSettingsOpen) {
+      deactivateWindow($contentProperties.activeWindow);
     }
   }
 
@@ -43,8 +45,7 @@
         </div>
         <div class="content-column">
           {#if $activeTab === "Login/Register/Sync"}
-            <Login {handleToggleSettings}/>
-            <!-- <p>Login/Sync</p> -->
+            <Login {handleToggleSettings} />
           {/if}
           {#if $activeTab === "workspace data"}
             <p>Workspace data content here</p>

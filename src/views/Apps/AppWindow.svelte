@@ -4,7 +4,7 @@
   import { applications } from "../../scripts/applicationsList";
   import { contentProperties, removeWindowStore, windowStores } from "../../scripts/storage";
   import DraggableResizable from "../DraggableResizable.svelte";
-  import { checkBoundaries, getAppIDsInAFrame } from "../../scripts/utils";
+  import { activateWindow, checkBoundaries, getAppIDsInAFrame } from "../../scripts/utils";
   import AppPreview from "./AppPreview.svelte";
   import { user } from "../../scripts/initGun";
 
@@ -64,14 +64,7 @@
     },
     dbclickFunc: function (store, event) {
       if (!$contentProperties.isAWindowActive && !showIcon) {
-        $contentProperties.isAWindowActive = true;
-        $contentProperties.activeWindow = uniqueID;
-        store.update((data) => {
-          data.isActive = true;
-          return data;
-        });
-        user.get("windows").get(uniqueID).put({ isActive: true });
-        $contentProperties.backgroundColor = "rgb(194, 204, 187)"
+        activateWindow(uniqueID);
       }
     },
   };
@@ -103,29 +96,9 @@
 </script>
 
 <DraggableResizable {uniqueID} {store} {...draggableFunctions} bind:this={draggableComponent}>
-  <!-- <div id={uniqueID+"-windowheader"} class="window-header app-header">
-    <div class="app-name">
-      {$store.name}
-    </div>
-    <input
-      type="button"
-      value="X"
-      class="close-button"
-      style="
-    background-color: red;
-    "
-      on:click={() => {
-        onClose();
-      }}
-      on:touchstart={onClose}
-      on:keydown
-      on:keyup
-      on:keypress
-    />
-  </div> -->
-  <div id={uniqueID+"-appcontent"} class="app-content" style="" >
+  <div id={uniqueID + "-appcontent"} class="app-content" style="">
     {#if showIcon}
-      <AppPreview  {uniqueID} />
+      <AppPreview {uniqueID} />
     {:else}
       <div class:pointer-events={!$store.isActive}>
         <svelte:component this={appComponent} {uniqueID} />
@@ -135,49 +108,18 @@
 </DraggableResizable>
 
 <style>
-  /* .app-header {
-    position: relative;
-    width: 100%;
-    height: 30px;
-    background-color: #2196f3;
-    display: flex;
-    justify-content: space-between;
-    cursor: move;
-    align-items: center;
-    color: #fff;
-  }
-
-  .app-name {
-    margin-left: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  } */
-
   .app-content {
     position: absolute;
     width: 100%;
-    height: 100%;/* - 30px;*/
-    /* top: 30px; */
+    height: 100%; /* - 30px;*/
     bottom: 0;
     display: block;
-    /* align-items: center;
-    justify-content: space-around; */
     overflow: hidden;
     background-color: rgb(255, 255, 255);
+    border: 1px solid black;
   }
-
   .pointer-events {
     pointer-events: none;
     user-select: none;
   }
-
-  /* .close-button {
-    border-radius: 5px;
-    background-color: red;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    margin-right: 10px;
-  } */
 </style>

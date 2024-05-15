@@ -12,7 +12,7 @@
 <div id="header">
   <!-- <SelectApplication {applications}/> -->
   <!-- <SearchApplication {applications}/> -->
-  <Settings {isSettingsOpen}/>
+  <Settings {isSettingsOpen} />
 </div>
 
 <style>

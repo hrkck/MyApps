@@ -22,14 +22,14 @@
     scaleFunc: function (store, event, x, y, scale) {},
     clickFunc: function (store, event) {
       // deactivate any active app
-      if($contentProperties.isAWindowActive == "settings"){
+      if ($contentProperties.isAWindowActive == "settings") {
         return;
-      }else if ($contentProperties.isAWindowActive) {
-        deactivateWindow($contentProperties.activeWindow)
+      } else if ($contentProperties.isAWindowActive) {
+        deactivateWindow($contentProperties.activeWindow);
       }
 
-      if($contextMenu.visible){
-        $contextMenu.visible = false
+      if ($contextMenu.visible) {
+        $contextMenu.visible = false;
       }
     },
   };
