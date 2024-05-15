@@ -1,7 +1,7 @@
 <!--  DraggabkeResizable.svelte -->
 <script>
   import { user } from "../scripts/initGun";
-  import { contentProperties, windowStores } from "../scripts/storage";
+  import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
 
   export let dragStartFunc = function (store, event, x, y) {};
   export let dragMoveFunc = function (store, event, x, y) {};
@@ -23,6 +23,7 @@
 
     function onMove(event) {
       if (resizing) return;
+      console.log($contextMenu.visible);
       isDragging = true;
 
       let dx, dy;
@@ -48,7 +49,7 @@
     }
 
     function onStart(event) {
-      if (event.button != 0 || ($contentProperties.isAWindowActive && !$store.isActiveDraggable))
+      if (($contentProperties.isAWindowActive && !$store.isActiveDraggable) || $contextMenu.visible)
         return;
       event.stopPropagation();
 

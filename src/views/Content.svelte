@@ -27,6 +27,10 @@
       }else if ($contentProperties.isAWindowActive) {
         deactivateWindow($contentProperties.activeWindow)
       }
+
+      if($contextMenu.visible){
+        $contextMenu.visible = false
+      }
     },
   };
 

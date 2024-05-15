@@ -18,7 +18,6 @@
     $contextMenu.screenX = (event.clientX - $contentProperties.x) / $contentProperties.scale;
     $contextMenu.screenY = (event.clientY - $contentProperties.y) / $contentProperties.scale;
     $contextMenu.visible = true;
-    console.log(event);
     $contextMenu.originalTargetID = event.srcElement.id || event.originalTarget.id
   }
 </script>
