@@ -40,7 +40,6 @@
         lastTouchX = currentTouchX;
         lastTouchY = currentTouchY;
       }
-
       if (dx !== undefined && dy !== undefined) {
         $store.x += dx / $store.contentScale;
         $store.y += dy / $store.contentScale;

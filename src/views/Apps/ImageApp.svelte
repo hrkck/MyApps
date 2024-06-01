@@ -6,6 +6,8 @@
   import Background from "../Background.svelte";
   import { user } from "../../scripts/initGun";
   import { onMount } from "svelte";
+  import Text from "../Elements/Text.svelte";
+  import DraggableImage from "../Elements/DraggableImage.svelte";
 
   // @ts-nocheck
 
@@ -18,9 +20,9 @@
 
   // bind with gundb init
   const imageAppStore = writable({
-    uniqueID: uniqueID+"-imageReferenceAppContent",
+    uniqueID: uniqueID + "-imageReferenceAppContent",
     hideOverflow: false,
-    dragEventTarget: uniqueID+"-imageReferenceAppContent-mainDiv",
+    dragEventTarget: uniqueID + "-imageReferenceAppContent-mainDiv",
     boxShadow: false,
     useWindow: false,
     scalable: true,
@@ -42,7 +44,7 @@
   });
   // @ts-ignore
 
-  // BUGGY CODE BELOW FIX
+  // update active state across relevant components:
   $: {
     // make each image also active when main app is active
     $imageAppStore.isActiveDraggable = $mainAppStore.isActive;
@@ -109,7 +111,7 @@
       .get("images")
       .map()
       .once(async (data, key) => {
-        if (data && data.imageUrl && data.imageUrl != 'd') {
+        if (data && data.imageUrl && data.imageUrl != "d") {
           if (images.some((img) => img.key === key)) return;
           try {
             const imageStoreData = await fetchStoreData("images", key, "imageStoreData");
@@ -163,73 +165,15 @@
       });
     },
     // @ts-ignore
-    dragMoveFunc: function (store, event, x, y) {},
-    // @ts-ignore
     dragEndFunc: function (store, event, x, y) {
       user.get("windows").get(uniqueID).get("workspaceData").put({ x: x, y: y });
     },
-    resizeMoveFunc: function (store, event, x, y, width, height) {},
-    // @ts-ignore
-    resizeStartFunc: function (store, event, x, y, width, height) {},
-    // @ts-ignore
-    resizeEndFunc: function (store, event, x, y, width, height) {},
     scaleFunc: function (store, event, x, y, scale) {
       store.update((data) => {
         data.contentScale = $contentProperties.scale;
         return data;
       });
       user.get("windows").get(uniqueID).get("workspaceData").put({ x: x, y: y, scale: scale });
-    },
-    // @ts-ignore
-    clickFunc: function (store, event) {},
-    // @ts-ignore
-    dbclickFunc: function (store, event) {},
-  };
-
-  const imageAppItemDraggableFunctions = {
-    dragStartFunc: function (store, event, x, y) {
-      store.update((data) => {
-        data.contentScale = $imageAppStore.scale * $contentProperties.scale;
-        return data;
-      });
-    },
-    dragEndFunc: function (store, event, x, y) {
-      const itemID = get(store).uniqueID;
-      const itemType = itemID.split("-")[1] === "text" ? "texts" : "images";
-      const storeType = itemType === "texts" ? "textStoreData" : "imageStoreData";
-      user
-        .get("windows")
-        .get(uniqueID)
-        .get("imageAppData")
-        .get(itemType)
-        .get(itemID)
-        .get(storeType)
-        .put({ x: x, y: y });
-    },
-    resizeStartFunc: function (store, event, x, y, width, height) {
-      store.update((data) => {
-        data.contentScale = $imageAppStore.scale * $contentProperties.scale;
-        return data;
-      });
-    },
-    resizeEndFunc: function (store, event, x, y, width, height) {
-      const itemID = get(store).uniqueID;
-      const itemType = itemID.split("-")[1] === "text" ? "texts" : "images";
-      const storeType = itemType === "texts" ? "textStoreData" : "imageStoreData";
-      user
-        .get("windows")
-        .get(uniqueID)
-        .get("imageAppData")
-        .get(itemType)
-        .get(itemID)
-        .get(storeType)
-        .put({ x: x, y: y, width: width, height: height });
-    },
-    scaleFunc: function (store, event, x, y, scale) {
-      store.update((data) => {
-        data.contentScale = $imageAppStore.scale * $contentProperties.scale;
-        return data;
-      });
     },
   };
 
@@ -253,8 +197,8 @@
     imageAppBackgroundScale: 1,
   };
 
-  // Function to handle pasted images
-  function handleImagePaste(imageUrl) {
+  // Function to handle pasted or dropped images
+  function handleImageData(imageUrl) {
     const imageObj = new Image();
     imageObj.onload = function () {
       const key = `ref-img-${nowStr()}`;
@@ -268,6 +212,7 @@
       });
 
       images = [...images, { imageUrl, key, imageStore }];
+
       // Save image data to GunDB
       let imageStoreData = get(imageStore);
       user
@@ -276,54 +221,9 @@
         .get("imageAppData")
         .get("images")
         .get(key)
-        .put({ imageUrl: imageUrl, imageStoreData: imageStoreData });
+        .put({ imageUrl, imageStoreData });
     };
     imageObj.src = imageUrl;
-  }
-
-  // Function to handle dropped images from web data
-  function handleImageDropFromWeb(htmlData) {
-    // Regular expression to extract Base64 encoded image data
-    const base64Regex = /src="data:image\/jpeg;base64,([^"]*)"/;
-    const match = htmlData.match(base64Regex);
-
-    if (match) {
-      // Extract the Base64 encoded image data
-      const base64Data = "data:image/jpeg;base64," + match[1];
-
-      // Create a new Image object
-      const imageObj = new Image();
-
-      // Onload function to handle image loading
-      imageObj.onload = function () {
-        const key = `ref-img-${nowStr()}`;
-        const imageStore = writable({
-          uniqueID: key,
-          boxShadow: false,
-          keepRatio: true,
-          width: this.naturalWidth,
-          height: this.naturalHeight,
-          ...itemProperties,
-        });
-
-        images = [...images, { imageUrl: base64Data, key, imageStore }];
-
-        // Save image data to GunDB
-        let imageStoreData = get(imageStore);
-        user
-          .get("windows")
-          .get(uniqueID)
-          .get("imageAppData")
-          .get("images")
-          .get(key)
-          .put({ imageUrl: base64Data, imageStoreData: imageStoreData });
-      };
-
-      // Set the src attribute of the Image object to the Base64 data
-      imageObj.src = base64Data;
-    } else {
-      console.log("No image data found in the HTML");
-    }
   }
 
   // Function to handle pasted text
@@ -341,6 +241,7 @@
     });
 
     texts = [...texts, { key, textStore }];
+
     // Save text data to GunDB
     let textStoreData = get(textStore);
     user
@@ -352,7 +253,7 @@
       .put({ text, textStoreData });
   }
 
-  // handlePaste function to support both images and text
+  // Function to handle paste event (supporting both images and text)
   function handlePaste(event) {
     const items = event.clipboardData.items;
 
@@ -361,7 +262,7 @@
       if (item.kind === "file" && item.type.includes("image")) {
         const blob = item.getAsFile();
         const reader = new FileReader();
-        reader.onload = (e) => handleImagePaste(e.target.result);
+        reader.onload = (e) => handleImageData(e.target.result);
         reader.readAsDataURL(blob);
       } else if (item.kind === "string" && item.type === "text/plain") {
         item.getAsString((text) => handleTextPaste(text));
@@ -373,7 +274,6 @@
   function handleDrop(event) {
     event.preventDefault();
 
-    console.log(event);
     // Check if files are being dropped
     if (event.dataTransfer.files.length > 0) {
       // Handle dropped files (images from file system)
@@ -381,30 +281,29 @@
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageUrl = e.target.result;
-        handleImagePaste(imageUrl); // Pass the image data to the existing function for handling pasted images
+        handleImageData(imageUrl); // Pass the image data to the existing function for handling pasted images
       };
       reader.readAsDataURL(file);
     } else {
       // Handle dropped image URL (images from web)
       const htmlData = event.dataTransfer.getData("text/html"); // Get the dropped image URL
-      handleImageDropFromWeb(htmlData); // Pass the URL to the existing function for handling pasted images
+      const base64Regex = /src="data:image\/jpeg;base64,([^"]*)"/;
+      const match = htmlData.match(base64Regex);
+
+      if (match) {
+        // Extract the Base64 encoded image data
+        const base64Data = "data:image/jpeg;base64," + match[1];
+        handleImageData(base64Data); // Pass the URL to the existing function for handling pasted images
+      } else {
+        console.log("No image data found in the HTML");
+      }
     }
   }
 
+  // Function to clear all images and texts
   function clearImages(event) {
-    console.log("clear images", event);
-    user.get("windows").get(uniqueID).get("imageAppData").get('images').map().get('imageUrl').put(null)
-    user.get("windows").get(uniqueID).get("imageAppData").get('images').map().get('imageStoreData').put(null)
-    user.get("windows").get(uniqueID).get("imageAppData").get('images').map().once((data,key)=>{
-      user.get("windows").get(uniqueID).get("imageAppData").get('images').get(key).put(null)
-    })
-    user.get("windows").get(uniqueID).get("imageAppData").get('images').put(null)
-    user.get("windows").get(uniqueID).get("imageAppData").put(null)
-
-    user.get("windows").get(uniqueID).get("imageAppData").get('texts').map().once((data,key)=>{
-      user.get("windows").get(uniqueID).get("imageAppData").get('texts').get(key).put(null)
-    })
-
+    user.get("windows").get(uniqueID).get("imageAppData").get("images").map().put(null);
+    user.get("windows").get(uniqueID).get("imageAppData").get("texts").map().put(null);
     images = [];
     texts = [];
   }
@@ -415,18 +314,17 @@
 <!--  -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  id={$imageAppStore.uniqueID+"-mainDiv"}
+  id={$imageAppStore.uniqueID + "-mainDiv"}
   class="main-image-app"
   on:mouseenter={() => self.addEventListener("paste", handlePaste)}
   on:mouseleave={() => self.removeEventListener("paste", handlePaste)}
   on:dragover={(event) => event.preventDefault()}
   on:drop={handleDrop}
 >
-<div class="info-area">
-
-  <button on:click={clearImages}>Delete All Text and Images</button>
-  <span> Use CTRL + V or CMD + V (mac) to paste clipboard data</span>
-</div>
+  <div class="info-area">
+    <button on:click={clearImages}>Delete All Text and Images</button>
+    <span> Use CTRL + V or CMD + V (mac) to paste clipboard data</span>
+  </div>
 
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="draggable-area">
@@ -437,30 +335,12 @@
     >
       <!-- image handling -->
       {#each images as { imageUrl, key, imageStore } (key)}
-        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-        <DraggableResizable uniqueID={key} store={imageStore} {...imageAppItemDraggableFunctions}>
-          <!-- add a frame like window draggable resizable -->
-          <!-- must simply contain the images  -->
-          <!-- a good use case to see good decoupling logic -->
-          <!-- in checkBoundaries - like functions -->
-          <img
-            class="image-resize"
-            src={imageUrl}
-            alt="File from Clipboard"
-            style="user-select: none; pointer-events:none;"
-          />
-        </DraggableResizable>
+        <DraggableImage {imageUrl} uniqueID={key} {imageStore} {imageAppStore} />
       {/each}
 
       <!-- Text handling -->
       {#each texts as { key, textStore } (key)}
-        <DraggableResizable uniqueID={key} store={textStore} {...imageAppItemDraggableFunctions}>
-          <div class="text-container">
-            <p class="centered-text">
-              {get(textStore).text}
-            </p>
-          </div>
-        </DraggableResizable>
+        <Text uniqueID={key} {textStore} {imageAppStore} />
       {/each}
     </DraggableResizable>
     <Background store={imageAppStore} />
@@ -479,27 +359,5 @@
     overflow: hidden;
     height: 100%;
     width: 100%;
-  }
-
-  .text-container {
-    background-color: rgba(0, 0, 0, 0.1); /* Transparent gray */
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden; /* Prevent text from overflowing the container */
-  }
-
-  .centered-text {
-    text-align: center;
-    margin: 0; /* Remove default margins from <p> tag */
-  }
-
-  .image-resize {
-    width: 100%;
-    height: 100%;
-    user-select: none;
-    pointer-events: none;
   }
 </style>
