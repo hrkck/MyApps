@@ -31,7 +31,8 @@
     if (event.target.innerText == "Reset Storage") {
       resetLocalStorage();
     }
-    $contextMenu.visible = false;
+    // $contextMenu.visible = false;
+    console.log('click on context');
   }
 
   function handleSubmenuClick(option, type) {

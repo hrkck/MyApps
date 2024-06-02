@@ -28,9 +28,9 @@
         deactivateWindow($contentProperties.activeWindow);
       }
 
-      if ($contextMenu.visible) {
-        $contextMenu.visible = false;
-      }
+      // if ($contextMenu.visible) {
+      //   $contextMenu.visible = false;
+      // }
     },
   };
 

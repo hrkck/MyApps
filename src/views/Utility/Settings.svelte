@@ -31,55 +31,60 @@
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div id="settings-button" on:contextmenu|preventDefault|stopPropagation={()=>{}}>
+<div id="gear-button-container" on:contextmenu|preventDefault|stopPropagation={() => {}}>
   <button on:click={handleToggleSettings} class="gear-button">&#x2699;</button>
-  {#if $isSettingsOpen}
-    <div id="settings-background">
-      <div id="settings-window">
-        <div class="nav-column">
-          <button on:click={() => setActiveTab("Login/Register/Sync")}>Login/Register/Sync</button>
-          <button on:click={() => setActiveTab("workspace data")}>Workspace Data</button>
-          <button on:click={() => setActiveTab("windows data")}>Windows Data</button>
-          <button on:click={() => setActiveTab("theme settings")}>Theme Settings</button>
-          <button on:click={() => setActiveTab("about")}>About</button>
-          <button on:click={() => setActiveTab("Reset Data")}>Reset Data</button>
-        </div>
-        <div class="content-column">
-          {#if $activeTab === "Login/Register/Sync"}
-            <Login {handleToggleSettings} />
-          {/if}
-          {#if $activeTab === "workspace data"}
-            <p>Workspace data content here</p>
-          {/if}
-          {#if $activeTab === "windows data"}
-            <p>Windows data content here</p>
-          {/if}
-          {#if $activeTab === "theme settings"}
-            <p>Theme settings content here</p>
-          {/if}
-          {#if $activeTab === "about"}
-            <p>Licensed under AGPL-3.0-or-later.</p>
-            <p>
-              Source code: <a
-                href="https://github.com/hrkck/MyApps"
-                target="_blank"
-                rel="noopener noreferrer">https://github.com/hrkck/MyApps</a
-              >
-            </p>
-          {/if}
-          {#if $activeTab === "Reset Data"}
-            <h1>RESET ALL DATA</h1>
-            <button on:click={handleResetWorkspace}>Reset Workspace</button>
-          {/if}
-        </div>
-      </div>
-    </div>
-  {/if}
 </div>
 
+{#if $isSettingsOpen}
+  <div id="settings-background">
+    <div id="settings-window">
+      <div class="nav-column">
+        <button on:click={() => setActiveTab("Login/Register/Sync")}>Login/Register/Sync</button>
+        <button on:click={() => setActiveTab("workspace data")}>Workspace Data</button>
+        <button on:click={() => setActiveTab("windows data")}>Windows Data</button>
+        <button on:click={() => setActiveTab("theme settings")}>Theme Settings</button>
+        <button on:click={() => setActiveTab("about")}>About</button>
+        <button on:click={() => setActiveTab("Reset Data")}>Reset Data</button>
+      </div>
+      <div class="content-column">
+        {#if $activeTab === "Login/Register/Sync"}
+          <Login {handleToggleSettings} />
+        {/if}
+        {#if $activeTab === "workspace data"}
+          <p>Workspace data content here</p>
+        {/if}
+        {#if $activeTab === "windows data"}
+          <p>Windows data content here</p>
+        {/if}
+        {#if $activeTab === "theme settings"}
+          <p>Theme settings content here</p>
+        {/if}
+        {#if $activeTab === "about"}
+          <p>Licensed under AGPL-3.0-or-later.</p>
+          <p>
+            Source code: <a
+              href="https://github.com/hrkck/MyApps"
+              target="_blank"
+              rel="noopener noreferrer">https://github.com/hrkck/MyApps</a
+            >
+          </p>
+        {/if}
+        {#if $activeTab === "Reset Data"}
+          <h1>RESET ALL DATA</h1>
+          <button on:click={handleResetWorkspace}>Reset Workspace</button>
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
+
+
 <style>
-  .gear-button {
+  #gear-button-container{
     z-index: 1000;
+
+  }
+  .gear-button {
     height: 30px;
     width: 30px;
     padding: 0;
@@ -97,6 +102,7 @@
     pointer-events: none;
   }
   #settings-window {
+    z-index: 501;
     display: flex;
     position: relative;
     vertical-align: middle;

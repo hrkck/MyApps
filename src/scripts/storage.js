@@ -108,14 +108,20 @@ export function removeWindowStore(uniqueID) {
   }
 }
 
+
 // Function to reset localStorage
 export function resetLocalStorage() {
-  console.log("cleaing localstorage AND gundb");
-  localStorage.clear();
-  user.get("windows").put(null);
-  user.put(null);
-  window.alert("Close this tab to clear GUN DB storage and stop all servers.");
-  location.reload(); // Reload the page
-  // user.get("windowsStore").put(null)
-  // user.get("workspaceStore").put(null)
+  const confirmed = window.confirm("Are you sure you want to clear localStorage and gundb?");
+  if (confirmed) {
+    console.log("clearing localStorage AND gundb");
+    localStorage.clear();
+    user.get("windows").put(null);
+    user.put(null);
+    window.alert("Close this tab to clear GUN DB storage and stop all servers.");
+    location.reload(); // Reload the page
+    // user.get("windowsStore").put(null)
+    // user.get("workspaceStore").put(null)
+  } else {
+    console.log("Reset canceled.");
+  }
 }

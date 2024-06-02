@@ -65,7 +65,7 @@
 
 <style>
   .frame {
-    background-color: #dceeff48;
+    background-color: #0083ff47;
     height: 100%;
     width: 100%;
   }

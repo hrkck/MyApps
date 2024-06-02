@@ -260,7 +260,9 @@
     let isScaling = false;
 
     function changeScale(event, zoom) {
-      if ($contentProperties.isAWindowActive && !$store.isActiveDraggable) return;
+      if ($contentProperties.isAWindowActive && !$store.isActiveDraggable) {
+        return;
+      }
 
       const rect = node.parentElement.getBoundingClientRect();
       const mouseX = initialDistance != 0 ? 1 : event.clientX - rect.left;
