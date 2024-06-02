@@ -4,21 +4,43 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --light-bg: ghostwhite;
+  --dark-bg: darkslategray;
+  --light-text: darkslategray;
+  --dark-text: ghostwhite;
 }
 
 body {
   margin: 0;
-  /* display: flex; */
-  /* place-items: center; */
   min-width: 320px;
   min-height: 100vh;
   overflow: hidden;
+
+  background-color: light-dark(var(--light-bg), var(--dark-bg));
+  color: light-dark(var(--light-text), var(--dark-text));
+}
+
+.ghost-slate {
+  background-color: light-dark(var(--light-bg), var(--dark-bg));
+  color: light-dark(var(--light-text), var(--dark-text));
+}
+
+.light-section {
+  color-scheme: light;
+  background-color: var(--light-bg);
+  color: var(--light-text);
+}
+
+.dark-section {
+  color-scheme: dark;
+  background-color: var(--dark-bg);
+  color: var(--dark-text);
 }
 
 /* 

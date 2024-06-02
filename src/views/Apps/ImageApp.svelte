@@ -321,7 +321,7 @@
   on:dragover={(event) => event.preventDefault()}
   on:drop={handleDrop}
 >
-  <div class="info-area">
+  <div class="info-area ghost-slate">
     <button on:click={clearImages}>Delete All Text and Images</button>
     <span> Use CTRL + V or CMD + V (mac) to paste clipboard data</span>
   </div>

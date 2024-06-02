@@ -55,7 +55,7 @@
   }
 </script>
 
-<div class="container" id={$mainAppStore.uniqueID+"-linkApp"}>
+<div class="container ghost-slate" id={$mainAppStore.uniqueID+"-linkApp"}>
   <label for="url">Enter URL:</label>
   <input type="text" id="url" bind:value={$linkData.linkUrl} on:input={updateImageUrl} />
 

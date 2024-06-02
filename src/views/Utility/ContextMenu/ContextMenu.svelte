@@ -7,24 +7,24 @@
   import { afterUpdate } from "svelte";
   import ImageAppContextMenu from "./ImageAppContextMenu.svelte";
 
-  let contextComponent;// = loadContext($contextMenu.originalTargetID)
+  let contextComponent; // = loadContext($contextMenu.originalTargetID)
 
-  afterUpdate(()=>{
-    contextComponent = loadContext($contextMenu.originalTargetID)
-  })
+  afterUpdate(() => {
+    contextComponent = loadContext($contextMenu.originalTargetID);
+  });
 
-  function loadContext(originalTargetID){
+  function loadContext(originalTargetID) {
     // console.log(originalTargetID.split('-')[0]);
     // console.log(originalTargetID);
-    switch (originalTargetID.split('-')[0]) {
-      case 'background':
-        return ContentAreaContext
+    switch (originalTargetID.split("-")[0]) {
+      case "background":
+        return ContentAreaContext;
         break;
-      case 'mainContent':
-        return ContentAreaContext
+      case "mainContent":
+        return ContentAreaContext;
         break;
-      case 'frame':
-        return FrameContext
+      case "frame":
+        return FrameContext;
         break;
       // case 'imageReferenceAppContent':
       //   return ImageAppContextMenu
@@ -47,7 +47,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="context-menu"
+  class="context-menu ghost-slate"
   style="position: absolute; left: {$contextMenu.x - 10}px; top: {$contextMenu.y - 10}px;"
   on:focus
   on:blur
@@ -63,7 +63,6 @@
 
 <style>
   .context-menu {
-    background-color: #fff;
     border: 1px solid #ccc;
     z-index: 1000;
     padding: 15px 0 15px 15px;

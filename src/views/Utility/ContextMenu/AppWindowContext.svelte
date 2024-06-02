@@ -18,7 +18,7 @@
 <ul>
   {#each menuItems as item, index}
     <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-    <li on:click={click} on:keydown on:keyup on:keypress style="background-color:{item.color};">
+    <li on:click={click} on:keydown on:keyup on:keypress >
       {item.label}
     </li>
   {/each}
@@ -34,13 +34,13 @@
     padding: 5px;
   }
   li:hover {
-    background-color: #f0f0f0;
+    /* background-color: #f0f0f0; */
     height: 50px;
   }
   li ul {
     list-style: none;
     border: 1px solid #ccc;
-    background-color: #fff;
+    /* background-color: #fff; */
     display: none;
     position: absolute;
     left: 100%;

@@ -30,7 +30,8 @@
   }
 </script>
 
-<div id="settings-button">
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div id="settings-button" on:contextmenu|preventDefault|stopPropagation={()=>{}}>
   <button on:click={handleToggleSettings} class="gear-button">&#x2699;</button>
   {#if $isSettingsOpen}
     <div id="settings-background">
