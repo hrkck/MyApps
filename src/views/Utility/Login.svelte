@@ -113,7 +113,7 @@
 
 <h1>Login, Register, or Sync</h1>
 
-<div>
+<div style="padding-bottom: 500px;">
   <h2>Welcome to Your Profile</h2>
   <p>
     Here you can sync your data across devices. If this is your first time, note down your
