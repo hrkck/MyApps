@@ -4,9 +4,8 @@
   import { user } from "../../scripts/initGun";
   import { contentProperties, windowStores } from "../../scripts/storage";
   import { get } from "svelte/store";
-  import app from "../../main";
-  import { checkBoundaries, getAppIDsInAFrame } from "../../scripts/utils";
-  import { afterUpdate, beforeUpdate, onMount } from "svelte";
+  import {  getAppIDsInAFrame } from "../../scripts/utils";
+  import {  beforeUpdate, onMount } from "svelte";
 
   export let uniqueID;
   const store = windowStores[uniqueID];
@@ -56,6 +55,14 @@
 
   beforeUpdate(() => {
     windowStores[uniqueID] = store;
+  });
+  onMount(() => {
+    user.get("windows").get(uniqueID).get('x').on(data=>{
+      $store.x=data
+    })
+    user.get("windows").get(uniqueID).get('y').on(data=>{
+      $store.y=data
+    })
   });
 </script>
 
