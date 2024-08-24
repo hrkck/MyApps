@@ -7,7 +7,8 @@
   export let uniqueID;
   export let imageStore;
   export let imageAppStore;
-  let imageAppUniqueID = $imageAppStore.uniqueID;
+  let imageAppUniqueID = $imageAppStore.mainAppStoreID;
+  // console.log('FIRST PRINT OF MAIN APP ID:',imageAppUniqueID );
 
   const imageAppItemDraggableFunctions = {
     dragStartFunc: function (store, event, x, y) {
@@ -15,8 +16,31 @@
         data.contentScale = $imageAppStore.scale * $contentProperties.scale;
         return data;
       });
+
+      // console.log('imageAppUniuqID: ', imageAppUniqueID);
+      // user
+      //   .get("windows")
+      //   .get(imageAppUniqueID)
+      //   .get("imageAppData")
+      //   .get("images")
+      //   .get(uniqueID)
+      //   .get("imageStoreData").once((data, key)=>{
+      //     console.log('data: ', data);
+      //   })
     },
-    dragEndFunc: function (store, event, x, y) {
+    dragEndFunc: async function (store, event, x, y) {
+      // console.log('drag end imagek key: ', uniqueID);
+      // console.log(x,y);
+      // user
+      //   .get("windows")
+      //   .get(imageAppUniqueID)
+      //   .get("imageAppData")
+      //   .get("images")
+      //   .get(uniqueID)
+      //   .get("imageStoreData")
+      //   .once(data=>{
+      //     console.log(data);
+      //   });
       user
         .get("windows")
         .get(imageAppUniqueID)
@@ -24,7 +48,7 @@
         .get("images")
         .get(uniqueID)
         .get("imageStoreData")
-        .put({ x: x, y: y });
+        .put({ x: x, y: y});
     },
     resizeStartFunc: function (store, event, x, y, width, height) {
       store.update((data) => {
@@ -41,6 +65,7 @@
         .get(uniqueID)
         .get("imageStoreData")
         .put({ x: x, y: y, width: width, height: height });
+        // console.log(x,y,height,width);
     },
     scaleFunc: function (store, event, x, y, scale) {
       store.update((data) => {

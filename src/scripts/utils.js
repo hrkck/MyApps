@@ -219,7 +219,7 @@ export function checkContainerBoundaries(parentID) {
   }
 }
 
-export function activateWindow(windowID){
+export function activateWindow(windowID) {
   if (windowID == "") return;
   let activeAppStore = windowStores[windowID];
   activeAppStore.update((data) => {
@@ -236,7 +236,9 @@ export function activateWindow(windowID){
 }
 
 export function deactivateWindow(windowID) {
-  if (windowID == "") return;
+  if (windowID == "") {
+    return;
+  };
   let activeAppStore = windowStores[windowID];
   activeAppStore.update((data) => {
     data.isActive = false;
@@ -249,4 +251,32 @@ export function deactivateWindow(windowID) {
     data.backgroundColor = "rgb(245, 252, 255)";
     return data;
   });
+}
+
+
+export const arrayToObject = (array) => {
+  return array.reduce((obj, item, index) => {
+    obj[index] = item;
+    return obj;
+  }, {});
+};
+
+export const objectToArray = (object) => {
+  return Object.keys(object).map((key) => object[key]);
+};
+
+
+export function cleanGunData(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(cleanGunData);
+  } else if (typeof obj === 'object' && obj !== null) {
+    const cleanedObj = {};
+    for (const key in obj) {
+      if (key !== '_' && key !== '#') {
+        cleanedObj[key] = cleanGunData(obj[key]);
+      }
+    }
+    return cleanedObj;
+  }
+  return obj;
 }

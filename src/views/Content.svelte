@@ -35,24 +35,41 @@
   };
 
   // Reset Workspace Position
+  // Reset Workspace Position
+  // Reset Workspace Position
   function resetWorkspacePosition() {
     let appIDs = getAppIDsInAFrame("mainContent");
-    const rect = getContainingRectangle(appIDs, 0);
-    if (rect.left == Infinity) {
+    const rect = getContainingRectangle(appIDs, 50); // Assuming padding is 50
+    console.log(rect);
+
+    if (rect.left === Infinity || rect.top === Infinity) {
       $contentProperties.scale = 1;
       $contentProperties.x = window.innerWidth / 2;
       $contentProperties.y = window.innerHeight / 2;
+      return;
     }
-    rect.width = Math.abs(rect.right - rect.left);
-    rect.height = Math.abs(rect.bottom - rect.top);
-    // set "view" position to middle of the minimal containing rectangle off all windows
-    $contentProperties.scale = 1;
-    $contentProperties.x = (window.innerWidth - rect.width) / 2;
-    $contentProperties.y = (window.innerHeight - rect.height) / 2;
-    // set any window non active
-    $contentProperties.isAWindowActive = false;
-    $contentProperties.activeWindow = "";
+
+    rect.width = rect.right - rect.left;
+    rect.height = rect.bottom - rect.top;
+
+    // Calculate the scale factor to fit the entire rectangle in the view
+    const scaleX = window.innerWidth / rect.width;
+    const scaleY = window.innerHeight / rect.height;
+    const scale = Math.min(scaleX, scaleY);
+
+    // Calculate the center of the containing rectangle
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    // Calculate the new content position to center the view on the containing rectangle
+    $contentProperties.scale = scale;
+    $contentProperties.x = window.innerWidth / 2 - centerX * scale;
+    $contentProperties.y = window.innerHeight / 2 - centerY * scale;
+
+    // Deactivate any active window
+    deactivateWindow($contentProperties.activeWindow);
   }
+
   function handleKeyPress(event) {
     if (event.key === "Home" || event.code === "Home") {
       console.log("home presses");

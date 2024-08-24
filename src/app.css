@@ -22,13 +22,15 @@ body {
   min-height: 100vh;
   overflow: hidden;
 
-  background-color: light-dark(var(--light-bg), var(--dark-bg));
-  color: light-dark(var(--light-text), var(--dark-text));
+  color-scheme: light;
+  background-color: var(--light-bg);
+  color: var(--light-text);
 }
 
 .ghost-slate {
-  background-color: light-dark(var(--light-bg), var(--dark-bg));
-  color: light-dark(var(--light-text), var(--dark-text));
+  color-scheme: light;
+  background-color: var(--light-bg);
+  color: var(--light-text);
 }
 
 .light-section {
@@ -38,9 +40,9 @@ body {
 }
 
 .dark-section {
-  color-scheme: dark;
-  background-color: var(--dark-bg);
-  color: var(--dark-text);
+  color-scheme: light;
+  background-color: var(--light-bg);
+  color: var(--light-text);
 }
 
 /* 

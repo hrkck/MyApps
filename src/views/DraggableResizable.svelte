@@ -44,6 +44,7 @@
         $store.x += dx / $store.contentScale;
         $store.y += dy / $store.contentScale;
       }
+      // console.log(dx / $store.contentScale || 0, dy / $store.contentScale || 0);
       dragMoveFunc(store, event, dx / $store.contentScale || 0, dy / $store.contentScale || 0);
     }
 
@@ -66,6 +67,7 @@
       window.addEventListener("touchmove", onMove, { passive: false });
       window.addEventListener("touchend", onEnd);
 
+      // console.log($store.x, $store.y);
       dragStartFunc(store, event, $store.x, $store.y);
     }
 
@@ -78,10 +80,12 @@
       window.removeEventListener("touchmove", onMove);
       window.removeEventListener("touchend", onEnd);
 
+      // console.log($store.x, $store.y);
       dragEndFunc(store, event, $store.x, $store.y);
     }
 
     let target;
+    // console.log($store);
     switch ($store.dragEventTarget) {
       case "window":
         target = window;
@@ -91,6 +95,9 @@
         break;
       default:
         target = document.getElementById($store.dragEventTarget);
+        // otherwise clikcing on element results in no dragging
+        $store.width = 0;
+        node.style.minWidth = 0;
         break;
     }
 
@@ -166,6 +173,11 @@
 
       const direction = active.direction;
       let delta;
+
+      if (initialRect == undefined && initialPos == undefined) {
+        console.log('undefined behavior, not resizing.');
+        return ;
+      }
 
       if (direction.match("east")) {
         delta = (event.pageX - initialPos.x) / $store.contentScale;
@@ -264,11 +276,14 @@
         return;
       }
 
+      // console.log('trying to scale');
+
       const rect = node.parentElement.getBoundingClientRect();
       const mouseX = initialDistance != 0 ? 1 : event.clientX - rect.left;
       const mouseY = initialDistance != 0 ? 1 : event.clientY - rect.top;
       let newScale = $store.scale * zoom;
 
+      // console.log(rect, mouseX, mouseY,  $store.scale, newScale);
       if (newScale > 0.05 && newScale < 7) {
         $store.x =
           ($store.x - mouseX / $store.contentScale) * (newScale / $store.scale) +
@@ -277,8 +292,12 @@
           ($store.y - mouseY / $store.contentScale) * (newScale / $store.scale) +
           mouseY / $store.contentScale;
         $store.scale = newScale;
-        scaleFunc(store, event, $store.x, $store.y, $store.scale);
       }
+      if($store.scale == undefined) {
+          // console.log('resetting scale to 1:');
+          $store.scale = 1;
+        }
+      scaleFunc(store, event, $store.x, $store.y, $store.scale);
     }
 
     function onMouseWheel(event) {
@@ -395,30 +414,30 @@
         if (withinBounds) {
           if ($store.isInsideFrameID !== "" && $store.isInsideFrameID !== frameID) {
             // Window was inside a different frame and is now being moved to a new frame
-            console.log(
-              "Transferring window from frame",
-              $store.isInsideFrameID,
-              "to frame",
-              frameID
-            );
+            // console.log(
+            //   "Transferring window from frame",
+            //   $store.isInsideFrameID,
+            //   "to frame",
+            //   frameID
+            // );
             $store.isInsideFrameID = frameID;
             // Additional logic here for updating GunDB or handling frame transfer
             user.get("windows").get(uniqueID).put({ isInsideFrameID: frameID });
           } else if ($store.isInsideFrameID === "") {
             // Window was not in any frame and is now being placed inside a frame
-            console.log("Placing window inside frame", frameID);
+            // console.log("Placing window inside frame", frameID);
             $store.isInsideFrameID = frameID;
             // Additional logic here for updating GunDB or handling initial placement into a frame
             user.get("windows").get(uniqueID).put({ isInsideFrameID: frameID });
           }
         } else if (!withinBounds && $store.isInsideFrameID === frameID) {
           // Window was inside this frame but has now been moved out
-          console.log("Removing window from frame", frameID);
+          // console.log("Removing window from frame", frameID);
           $store.isInsideFrameID = "";
           // Additional logic here for updating GunDB or handling removal from a frame
           user.get("windows").get(uniqueID).put({ isInsideFrameID: "" });
         } else {
-          console.log("Window was not and is not in a frame");
+          // console.log("Window was not and is not in a frame");
         }
       }
     }

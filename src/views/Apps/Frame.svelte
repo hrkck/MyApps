@@ -57,12 +57,12 @@
     windowStores[uniqueID] = store;
   });
   onMount(() => {
-    user.get("windows").get(uniqueID).get('x').on(data=>{
-      $store.x=data
-    })
-    user.get("windows").get(uniqueID).get('y').on(data=>{
-      $store.y=data
-    })
+    // user.get("windows").get(uniqueID).get('x').on(data=>{
+    //   $store.x=data
+    // })
+    // user.get("windows").get(uniqueID).get('y').on(data=>{
+    //   $store.y=data
+    // })
   });
 </script>
 

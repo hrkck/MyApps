@@ -93,14 +93,14 @@
     checkShowIcon();
     checkBoundaries($store.isInsideFrameID);
 
-    user.get("windows").get(uniqueID).get('x').on(data=>{
-      // console.log(data);
-      $store.x=data
-    })
-    user.get("windows").get(uniqueID).get('y').on(data=>{
-      // console.log(data);
-      $store.y=data
-    })
+    // user.get("windows").get(uniqueID).get('x').on(data=>{
+    //   // console.log(data);
+    //   $store.x=data
+    // })
+    // user.get("windows").get(uniqueID).get('y').on(data=>{
+    //   // console.log(data);
+    //   $store.y=data
+    // })
   });
 </script>
 

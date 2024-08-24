@@ -20,9 +20,14 @@
     $contextMenu.visible = true;
     $contextMenu.originalTargetID = event.srcElement.id || event.originalTarget.id;
   }
+
+  function trackMousePosition(event){
+    $contentProperties.mouseX = event.clientX;
+    $contentProperties.mouseY = event.clientY;
+  }
 </script>
 
-<svelte:window on:contextmenu={showContextMenu} />
+<svelte:window on:contextmenu={showContextMenu} on:mousemove={trackMousePosition} on:dragover={trackMousePosition}/>
 
 <main id="app">
   <Content />

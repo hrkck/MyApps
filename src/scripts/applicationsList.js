@@ -55,13 +55,13 @@ export const applications = [
     component: LinkApp,
     ...AppProperties,
   },
-  // {
-  //   id: 3,
-  //   name: "textEditor",
-  //   title: "Text Editor App",
-  //   component: TextEditor,
-  //   ...AppProperties,
-  // },
+  {
+    id: 3,
+    name: "textEditor",
+    title: "Text Editor App",
+    component: TextEditor,
+    ...AppProperties,
+  },
   {
     id: 4,
     name: "imageReferenceApp",

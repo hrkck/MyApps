@@ -10,6 +10,7 @@ export let contextMenu = writable({
   screenY: 0,
   originalTargetID: "none",
 });
+
 // Helper function to initialize and manage local storage-backed Svelte stores
 export function getLocalStorage(key, initialValue) {
   const storedValue = localStorage.getItem(key);
@@ -51,7 +52,10 @@ export let contentProperties = getLocalStorage("mainContent", {
   selectedWindows: [],
   isAWindowActive: false,
   activeWindow: "",
+  mouseX: 0,
+  mouseY: 0,
 });
+
 //will be added with gun db
 contentProperties.update((data) => {
   data.windowList = {};

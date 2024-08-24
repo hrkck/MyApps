@@ -26,8 +26,9 @@
       case "frame":
         return FrameContext;
         break;
-      // case 'imageReferenceAppContent':
-      //   return ImageAppContextMenu
+      case 'imageReferenceAppContent':
+        // console.log('opening image refenrece app context menu');
+        // return ImageAppContextMenu
       default:
         return AppWindowContext;
         break;
@@ -65,6 +66,6 @@
   .context-menu {
     border: 1px solid #ccc;
     z-index: 1000;
-    padding: 15px 0 15px 15px;
+    /* padding: 15px 0 15px 15px; */
   }
 </style>
