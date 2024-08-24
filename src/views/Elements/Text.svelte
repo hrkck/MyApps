@@ -47,31 +47,31 @@
         .get(uniqueID)
         .get("textStoreData")
         .put({ x: x, y: y, width: width, height: height });
-        console.log(store, event, x, y, width, height);
+        // console.log(store, event, x, y, width, height);
     },
     scaleFunc: function (store, event, x, y, scale) {
       store.update((data) => {
         data.contentScale = $imageAppStore.scale * $contentProperties.scale;
         return data;
       });
-      console.log($imageAppStore.scale, $contentProperties.scale);
+      // console.log($imageAppStore.scale, $contentProperties.scale);
     },
   };
 
   onMount(async () => {
     const blocks = await fetchBlocksData("texts", uniqueID);
     if (blocks) {
-      console.log("Setting blocks Data:");
-      console.log(blocks);
+      // console.log("Setting blocks Data:");
+      // console.log(blocks);
       textStore.update((store) => {
         return { ...store, blocks: blocks };
       }); // Set the entire content object
-      console.log(get(textStore));
-      console.log(
-        get(textStore) && get(textStore).blocks && get(textStore).blocks.length
-          ? get(textStore).blocks
-          : "No blocks found",
-      );
+      // console.log(get(textStore));
+      // console.log(
+        // get(textStore) && get(textStore).blocks && get(textStore).blocks.length
+          // ? get(textStore).blocks
+          // : "No blocks found",
+      // );
     }
   });
 

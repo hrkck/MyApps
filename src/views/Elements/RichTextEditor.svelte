@@ -48,14 +48,14 @@
       { type: "paragraph", data: { text: "Start typing here..." } },
     ];
 
-    console.log($textStore);
+    // console.log($textStore);
 
     if (!Array.isArray(blocks) || blocks.length === 0 || typeof blocks[0] !== "object") {
       console.log("Blocks are not ready yet. Waiting for textStore to be populated.");
       return;
     }
 
-    console.log("This what blocks is intially: ", blocks);
+    // console.log("This what blocks is intially: ", blocks);
 
     if (blocks.length === 0) {
       console.log("Blocks are not ready yet. Waiting for textStore to be populated.");
@@ -90,24 +90,24 @@
       },
       data: { blocks },
       onReady: () => {
-        console.log("Editor.js is ready to work!");
+        // console.log("Editor.js is ready to work!");
         isEditorReady = true;
       },
       onChange: async (api, event) => {
-        console.log("Editor's content changed!", event);
+        // console.log("Editor's content changed!", event);
         if (editor) {
           try {
             const content = await editor.save();
-            console.log("Saved content:", content);
+            // console.log("Saved content:", content);
             if (validateBlocks(content.blocks)) {
-              console.log(content.blocks);
+              // console.log(content.blocks);
               textStore.update((store) => {
                 store.blocks = content.blocks;
-                console.log("text store after attempting data save");
-                console.log(store);
+                // console.log("text store after attempting data save");
+                // console.log(store);
                 return store;
               });
-              console.log(content);
+              // console.log(content);
               saveToGunDB(content); // Save entire content to GunDB
             } else {
               console.warn("Invalid block data detected, skipping update.");
@@ -131,11 +131,11 @@
   const updateEditorContent = async () => {
     if (isEditorReady && editor) {
       const blocks = get(textStore).blocks || [];
-      console.log("Updating editor content:", blocks);
+      // console.log("Updating editor content:", blocks);
       try {
         const currentContent = await editor.save();
         if (JSON.stringify(currentContent.blocks) !== JSON.stringify(blocks)) {
-          console.log("Rendering new blocks:", blocks);
+          // console.log("Rendering new blocks:", blocks);
           editor.render({ blocks });
         }
       } catch (error) {
@@ -146,7 +146,7 @@
 
   const destroyEditor = () => {
     if (editor) {
-      console.log("Destroying editor.");
+      // console.log("Destroying editor.");
       editor.destroy();
       editor = null;
     }
@@ -184,7 +184,7 @@
           if (ack.err) {
             console.error("Error saving block to GunDB:", ack.err);
           } else {
-            console.log(`Successfully saved block ${block.id} to GunDB:`, block);
+            // console.log(`Successfully saved block ${block.id} to GunDB:`, block);
           }
         });
     });
@@ -200,8 +200,8 @@
         .map()
         .get('data')
         .once(data=>{
-          console.log('printing blocks aftger saveToGunDB function:');
-          console.log(data);
+          // console.log('printing blocks aftger saveToGunDB function:');
+          // console.log(data);
         })
   };
 
@@ -221,7 +221,7 @@
   });
 
   onDestroy(() => {
-    console.log("onDestroy");
+    // console.log("onDestroy");
     destroyEditor();
   });
 </script>
