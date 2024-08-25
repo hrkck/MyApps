@@ -118,7 +118,24 @@ export function resetLocalStorage() {
   const confirmed = window.confirm("Are you sure you want to clear localStorage and gundb?");
   if (confirmed) {
     console.log("clearing localStorage AND gundb");
-    localStorage.clear();
+    sessionStorage.clear()
+    localStorage.clear()
+    caches.keys().then(keys => {
+      keys.forEach(key => caches.delete(key))
+    })
+    indexedDB.databases().then(dbs => {
+      dbs.forEach(db => indexedDB.deleteDatabase(db.name))
+    })
+    document.cookie = document.cookie.split(';').reduce((newCookie1, keyVal) => {
+      var pair = keyVal.trim().split('=')
+      if (pair[0]) {
+        if (pair[0] !== 'path' && pair[0] !== 'expires') {
+          newCookie1 += pair[0] + '=;'
+        }
+      }
+      return newCookie1
+    }, 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path:/;')
+
     user.get("windows").put(null);
     user.put(null);
     window.alert("Close this tab to clear GUN DB storage and stop all servers.");
