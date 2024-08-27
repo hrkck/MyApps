@@ -15,7 +15,6 @@ const moduleExclude = match => {
   }
 }
 
-
 // https://vitejs.dev/config/
 export default defineConfig({
   optimizeDeps: {
@@ -31,6 +30,18 @@ export default defineConfig({
       'gun/lib/store',
       'gun/lib/rindexed',
     ],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Split vendor code (e.g., Svelte, GunDB, EditorJS) into a separate chunk
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
+    },
   },
   plugins: [
     moduleExclude('text-encoding'),

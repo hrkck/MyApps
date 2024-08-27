@@ -68,7 +68,13 @@
   onMount(async () => {
     await initializeAppData();
     console.log($imageAppStore.dragEventTarget);
+
   });
+
+  function resolvePath(pathArray) {
+    return pathArray.reduce((acc, key) => acc.get(key), user);
+  }
+  
 
   async function fetchStoreData(dataType, key, storeProperty) {
     if (storeProperty === "textStoreData") {
@@ -103,6 +109,7 @@
         .get("textStoreData")
         .once((data) => {
           if (data) {
+            console.log("Fetching: ", dataType, key, cleanGunData(data));
             resolve(cleanGunData(data));
           } else {
             reject(new Error(`No data found for ${dataType}/${key}/textStoreData`));
@@ -147,7 +154,7 @@
     return new Promise((resolve, reject) => {
       user
         .get("windows")
-        .get(uniqueID) // Use the appropriate uniqueID here
+        .get(uniqueID)
         .get("imageAppData")
         .get(dataType)
         .get(key)
@@ -157,10 +164,19 @@
         .once(async (block) => {
           if (block) {
             // Fetch the actual data for the block
-            // console.log("block:");
-            // console.log(block);
             const data = await fetchBlockInnerData(dataType, key, blockId, "data");
             block.data = data;
+            // console.log("BLOCK: |", cleanGunData(block));
+
+            // console.log("READHING SOMETHING:");
+            // let something = resolvePath(["windows", uniqueID, "imageAppData", 'textStoreData', key, "textStoreData", "blocks", blockId, 'data'])
+            // console.log("something: ", something);
+
+            // Fetch any nested image URLs
+            let whatever = await fetchNestedImageUrls(dataType, key, blockId);
+            // console.log("this is whatever: ", whatever);
+            block.data.file = {url: whatever.url}
+
             resolve(cleanGunData(block));
           } else {
             reject(
@@ -185,13 +201,42 @@
         .get(innerKey)
         .once((data) => {
           if (data) {
-            // console.log("block inner data:");
-            // console.log(data);
+            console.log("block inner data:");
+            console.log(data);
             resolve(cleanGunData(data));
           } else {
             reject(
               new Error(
                 `No data found for ${dataType}/${key}/textStoreData/blocks/${blockId}/${innerKey}`,
+              ),
+            );
+          }
+        });
+    });
+  }
+
+  async function fetchNestedImageUrls(dataType, key, blockId) {
+    return new Promise((resolve, reject) => {
+      user
+        .get("windows")
+        .get(uniqueID) // Use the appropriate uniqueID here
+        .get("imageAppData")
+        .get(dataType)
+        .get(key)
+        .get("textStoreData")
+        .get("blocks")
+        .get(blockId)
+        .get("data")
+        // .get("file") FOR SOME REASON I CANNOT SAVE IN FILE AS EDITORJS SAVES IT
+        .once((data) => {
+          if (data) {
+            // console.log("SUPPOSED IMAGE DATA:", data);
+            // console.log(data);
+            resolve(cleanGunData(data));
+          } else {
+            reject(
+              new Error(
+                `No data found for ${dataType}/${key}/textStoreData/blocks/${blockId}/file/data/url`,
               ),
             );
           }
@@ -265,12 +310,15 @@
 
             // Fetch the text store data without the blocks
             const textStoreData = await fetchTextStoreData("texts", key);
+            const editorJSBlocks = await fetchStoreData("texts", key, "textStoreData");
+            console.log("Fetched editorJSBlocks:", editorJSBlocks);
             // console.log("Fetched textStoreData:", textStoreData);
 
             // Initialize the textStore with the fetched data
             const textStore = writable({
               ...textStoreData,
               text: data.text,
+              blocks: editorJSBlocks,
               _: "cleared-gundb-output",
             });
 
@@ -392,6 +440,10 @@
     const rect = draggableAreaElement.getBoundingClientRect();
     coordinates = { x: rect.left + window.scrollX, y: rect.top + window.scrollY };
 
+    // Initialize the blocks data in GunDB
+    let randomBlockID = generateRandomString(10);
+    const blocks = [{ id: randomBlockID, type: "paragraph", data: { text: text } }];
+
     const textStore = writable({
       text: text,
       uniqueID: key,
@@ -399,6 +451,7 @@
       keepRatio: false,
       width: 200,
       height: 200,
+      blocks: blocks,
       ...itemProperties,
       x: ((x - coordinates.x) / $contentProperties.scale - $imageAppStore.x) / $imageAppStore.scale,
       y: ((y - coordinates.y) / $contentProperties.scale - $imageAppStore.y) / $imageAppStore.scale,
@@ -422,9 +475,7 @@
         }
       });
 
-    // Initialize the blocks data in GunDB
-    let randomBlockID = generateRandomString(10);
-    const blocks = [{ id: randomBlockID, type: "paragraph", data: { text: text } }];
+    
     console.log("pretending to put blocks in gundb when pasting text");
     blocks.forEach((block) => {
       user

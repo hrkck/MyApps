@@ -9,11 +9,10 @@
   import CodeTool from "@editorjs/code";
   import InlineCode from "@editorjs/inline-code";
   import ImageTool from "@editorjs/image";
-  import { user } from "../../scripts/initGun"; // Ensure this import
 
   export let textStore;
-  export let uniqueID;
-  export let mainAppStoreUniqueID;
+  // export let uniqueID;
+  // export let mainAppStoreUniqueID;
   const dispatch = createEventDispatcher();
 
   let editor;
@@ -48,16 +47,7 @@
       { type: "paragraph", data: { text: "Start typing here..." } },
     ];
 
-    // console.log($textStore);
-
     if (!Array.isArray(blocks) || blocks.length === 0 || typeof blocks[0] !== "object") {
-      console.log("Blocks are not ready yet. Waiting for textStore to be populated.");
-      return;
-    }
-
-    // console.log("This what blocks is intially: ", blocks);
-
-    if (blocks.length === 0) {
       console.log("Blocks are not ready yet. Waiting for textStore to be populated.");
       return;
     }
@@ -90,25 +80,18 @@
       },
       data: { blocks },
       onReady: () => {
-        // console.log("Editor.js is ready to work!");
         isEditorReady = true;
       },
-      onChange: async (api, event) => {
-        // console.log("Editor's content changed!", event);
+      onChange: async () => {
         if (editor) {
           try {
             const content = await editor.save();
-            // console.log("Saved content:", content);
             if (validateBlocks(content.blocks)) {
-              // console.log(content.blocks);
               textStore.update((store) => {
                 store.blocks = content.blocks;
-                // console.log("text store after attempting data save");
-                // console.log(store);
                 return store;
               });
-              // console.log(content);
-              saveToGunDB(content); // Save entire content to GunDB
+              dispatch("contentChanged", content); // Dispatch event to parent
             } else {
               console.warn("Invalid block data detected, skipping update.");
             }
@@ -131,11 +114,9 @@
   const updateEditorContent = async () => {
     if (isEditorReady && editor) {
       const blocks = get(textStore).blocks || [];
-      // console.log("Updating editor content:", blocks);
       try {
         const currentContent = await editor.save();
         if (JSON.stringify(currentContent.blocks) !== JSON.stringify(blocks)) {
-          // console.log("Rendering new blocks:", blocks);
           editor.render({ blocks });
         }
       } catch (error) {
@@ -146,7 +127,6 @@
 
   const destroyEditor = () => {
     if (editor) {
-      // console.log("Destroying editor.");
       editor.destroy();
       editor = null;
     }
@@ -157,61 +137,50 @@
     return (
       Array.isArray(blocks) &&
       blocks.every((block) => {
-        return (
-          block.type &&
-          typeof block.type === "string" &&
-          block.data &&
-          typeof block.data === "object" &&
-          block.data.text &&
-          typeof block.data.text === "string"
-        );
+        if (!block.type || typeof block.type !== "string") {
+          return false;
+        }
+
+        if (!block.data || typeof block.data !== "object") {
+          return false;
+        }
+
+        switch (block.type) {
+          case "paragraph":
+          case "header":
+          case "quote":
+          case "code":
+          case "checklist":
+          case "list":
+          case "inlineCode":
+            // For text-based blocks, ensure the data contains a string text property
+            return typeof block.data.text === "string";
+
+          case "image":
+            // For image blocks, ensure the necessary properties exist
+            return (
+              typeof block.data.file === "object" &&
+              typeof block.data.file.url === "string" &&
+              typeof block.data.withBorder === "boolean" &&
+              typeof block.data.stretched === "boolean" &&
+              typeof block.data.withBackground === "boolean"
+            );
+
+          // Add more cases here for other block types you support
+          default:
+            // If the block type is unrecognized, you might want to reject it
+            console.warn(`Unknown block type: ${block.type}`);
+            return false;
+        }
       })
     );
   };
 
-  const saveToGunDB = (content) => {
-    content.blocks.forEach((block) => {
-      user
-        .get("windows")
-        .get(mainAppStoreUniqueID)
-        .get("imageAppData")
-        .get("texts")
-        .get(uniqueID)
-        .get("textStoreData")
-        .get("blocks")
-        .get(block.id)
-        .put(block, (ack) => {
-          if (ack.err) {
-            console.error("Error saving block to GunDB:", ack.err);
-          } else {
-            // console.log(`Successfully saved block ${block.id} to GunDB:`, block);
-          }
-        });
-    });
-
-    user
-        .get("windows")
-        .get(mainAppStoreUniqueID)
-        .get("imageAppData")
-        .get("texts")
-        .get(uniqueID)
-        .get("textStoreData")
-        .get("blocks")
-        .map()
-        .get('data')
-        .once(data=>{
-          // console.log('printing blocks aftger saveToGunDB function:');
-          // console.log(data);
-        })
-  };
-
   onMount(() => {
-    console.log("onMount");
     initializeEditor();
   });
 
   afterUpdate(() => {
-    // console.log("afterUpdate");
     const blocks = get(textStore).blocks || [];
     if (isEditorReady) {
       // updateEditorContent();
@@ -221,7 +190,6 @@
   });
 
   onDestroy(() => {
-    // console.log("onDestroy");
     destroyEditor();
   });
 </script>
