@@ -85,7 +85,9 @@
     }
 
     let target;
-    // console.log($store);
+    console.log($store);
+    console.log(target);
+    console.log(node);
     switch ($store.dragEventTarget) {
       case "window":
         target = window;

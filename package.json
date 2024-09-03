@@ -15,9 +15,9 @@
     "vite": "^5.1.6"
   },
   "dependencies": {
+    "@editorjs/editorjs": "^2.29.1",
     "@editorjs/checklist": "^1.6.0",
     "@editorjs/code": "^2.9.0",
-    "@editorjs/editorjs": "^2.29.1",
     "@editorjs/header": "^2.8.1",
     "@editorjs/image": "^2.9.0",
     "@editorjs/inline-code": "^1.5.0",

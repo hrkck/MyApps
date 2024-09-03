@@ -8,7 +8,6 @@
   import { onMount } from "svelte";
   import Text from "../Elements/Text.svelte";
   import DraggableImage from "../Elements/DraggableImage.svelte";
-  import c from "@editorjs/header";
 
   // @ts-nocheck
 
@@ -451,7 +450,7 @@
       keepRatio: false,
       width: 200,
       height: 200,
-      blocks: blocks,
+      // blocks: blocks,
       ...itemProperties,
       x: ((x - coordinates.x) / $contentProperties.scale - $imageAppStore.x) / $imageAppStore.scale,
       y: ((y - coordinates.y) / $contentProperties.scale - $imageAppStore.y) / $imageAppStore.scale,
@@ -475,6 +474,10 @@
         }
       });
 
+      textStore.update((store)=>{
+        const newStore = {blocks:blocks, ...store};
+        return newStore;
+      })
     
     console.log("pretending to put blocks in gundb when pasting text");
     blocks.forEach((block) => {

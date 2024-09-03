@@ -66,60 +66,59 @@
   }
 
   function saveToGunDB(content) {
-  if (!content || !Array.isArray(content.blocks)) {
-    console.error("Invalid content or blocks data provided.");
-    return;
-  }
+    if (!content || !Array.isArray(content.blocks)) {
+      console.error("Invalid content or blocks data provided.");
+      return;
+    }
 
-  content.blocks.forEach((block) => {
-    if (block.id) {
-      user
-        .get("windows")
-        .get(mainAppStoreUniqueID)
-        .get("imageAppData")
-        .get("texts")
-        .get(uniqueID)
-        .get("textStoreData")
-        .get("blocks")
-        .get(block.id)
-        .put(block, (ack) => {
-          if (ack.err) {
-            console.error("Error saving block to GunDB:", ack.err);
-          } else {
-            console.log(`Successfully saved block ${block.id} to GunDB:`, block);
-            if (block.data?.file?.url) {
-              console.log("Saving image block.");
-              // Here we should make sure that 'file' and its URL are properly saved
-              if (block.data.file.url) {
-                user
-                  .get("windows")
-                  .get(mainAppStoreUniqueID)
-                  .get("imageAppData")
-                  .get("texts")
-                  .get(uniqueID)
-                  .get("textStoreData")
-                  .get("blocks")
-                  .get(block.id)
-                  .get("data")
-                  .get("url") // for some reason I cannot save in normal editorjs format which is data.file.url, instead i save it in data.url then it works.
-                  .put(block.data.file.url, (ack) => {
-                    if (ack.err) {
-                      console.error("Error saving file data:", ack.err);
-                    } else {
-                      console.log("Successfully saved file data.");
-                      console.log(block.data.file.url);
-                    }
-                  });
+    content.blocks.forEach((block) => {
+      if (block.id) {
+        user
+          .get("windows")
+          .get(mainAppStoreUniqueID)
+          .get("imageAppData")
+          .get("texts")
+          .get(uniqueID)
+          .get("textStoreData")
+          .get("blocks")
+          .get(block.id)
+          .put(block, (ack) => {
+            if (ack.err) {
+              console.error("Error saving block to GunDB:", ack.err);
+            } else {
+              console.log(`Successfully saved block ${block.id} to GunDB:`, block);
+              if (block.data?.file?.url) {
+                console.log("Saving image block.");
+                // Here we should make sure that 'file' and its URL are properly saved
+                if (block.data.file.url) {
+                  user
+                    .get("windows")
+                    .get(mainAppStoreUniqueID)
+                    .get("imageAppData")
+                    .get("texts")
+                    .get(uniqueID)
+                    .get("textStoreData")
+                    .get("blocks")
+                    .get(block.id)
+                    .get("data")
+                    .get("url") // for some reason I cannot save in normal editorjs format which is data.file.url, instead i save it in data.url then it works.
+                    .put(block.data.file.url, (ack) => {
+                      if (ack.err) {
+                        console.error("Error saving file data:", ack.err);
+                      } else {
+                        console.log("Successfully saved file data.");
+                        console.log(block.data.file.url);
+                      }
+                    });
+                }
               }
             }
-          }
-        });
-    } else {
-      console.warn("Skipping block with no ID:", block);
-    }
-  });
-}
-
+          });
+      } else {
+        console.warn("Skipping block with no ID:", block);
+      }
+    });
+  }
 
   onMount(async () => {
     try {

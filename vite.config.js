@@ -3,7 +3,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
 const moduleExclude = match => {
-  const m = id => id.indexOf(match) > -1
+  const m = id => id.includes(match)
   return {
     name: `exclude-${match}`,
     resolveId(id) {
@@ -35,7 +35,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Split vendor code (e.g., Svelte, GunDB, EditorJS) into a separate chunk
           if (id.includes('node_modules')) {
             return 'vendor';
           }

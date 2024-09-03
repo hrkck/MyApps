@@ -69,13 +69,13 @@ export const applications = [
     component: ImageApp,
     ...AppProperties,
   },
-  // {
-  //   id: 4,
-  //   name: "exampleApp",
-  //   title: "Example App",
-  //   component: ExampleApp,
-  //   ...AppProperties,
-  // },
+  {
+    id: 4,
+    name: "exampleApp",
+    title: "Example App",
+    component: ExampleApp,
+    ...AppProperties,
+  },
   // ... add other applications;
 ];
 

@@ -53,7 +53,7 @@
 </script>
 
 <div class="text-container">
-  <RichTextEditor textStore={mainAppStore} {uniqueID} on:change={handleEditorChange} />
+  <RichTextEditor textStore={mainAppStore} on:change={handleEditorChange} />
 </div>
 
 <style>
