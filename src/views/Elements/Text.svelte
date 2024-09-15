@@ -1,6 +1,6 @@
 <script>
   import RichTextEditor from "./RichTextEditor.svelte";
-  import DraggableResizable from "../DraggableResizable.svelte";
+  import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { contentProperties } from "../../scripts/storage";
   import { user } from "../../scripts/initGun";
   import { get, writable } from "svelte/store";

@@ -1,7 +1,8 @@
 <!--  DraggabkeResizable.svelte -->
 <script>
-  import { user } from "../scripts/initGun";
-  import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
+  import { user } from "../../scripts/initGun";
+  import { contentProperties, contextMenu, windowStores } from "../../scripts/storage";
+    import { throttle } from "../../scripts/utils";
 
   export let dragStartFunc = function (store, event, x, y) {};
   export let dragMoveFunc = function (store, event, x, y) {};
@@ -21,7 +22,7 @@
   function draggable(node) {
     let lastTouchX, lastTouchY; // Track the last touch positions
 
-    function onMove(event) {
+    const onMove = throttle((event) => {
       if (resizing) return;
       event.preventDefault();
       isDragging = true;
@@ -46,7 +47,7 @@
       }
       // console.log(dx / $store.contentScale || 0, dy / $store.contentScale || 0);
       dragMoveFunc(store, event, dx / $store.contentScale || 0, dy / $store.contentScale || 0);
-    }
+    }, 8);
 
     function onStart(event) {
       if (
@@ -170,15 +171,15 @@
     const minWidth = 80;
     const minHeight = 80;
 
-    function onMove(event) {
+    const onMove = throttle((event) => {
       if (!active || ($contentProperties.isAWindowActive && !$store.isActiveDraggable)) return;
 
       const direction = active.direction;
       let delta;
 
       if (initialRect == undefined && initialPos == undefined) {
-        console.log('undefined behavior, not resizing.');
-        return ;
+        console.log("undefined behavior, not resizing.");
+        return;
       }
 
       if (direction.match("east")) {
@@ -209,7 +210,7 @@
       }
 
       resizeMoveFunc(store, event, $store.x, $store.y, $store.width, $store.height);
-    }
+    }, 16);
 
     function onMouseDown(event) {
       event.stopPropagation();
@@ -295,10 +296,10 @@
           mouseY / $store.contentScale;
         $store.scale = newScale;
       }
-      if($store.scale == undefined) {
-          // console.log('resetting scale to 1:');
-          $store.scale = 1;
-        }
+      if ($store.scale == undefined) {
+        // console.log('resetting scale to 1:');
+        $store.scale = 1;
+      }
       scaleFunc(store, event, $store.x, $store.y, $store.scale);
     }
 
@@ -316,7 +317,7 @@
         const touch2 = event.touches[1];
         initialDistance = Math.hypot(
           touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY
+          touch2.clientY - touch1.clientY,
         );
       }
     }
@@ -327,7 +328,7 @@
         const touch2 = event.touches[1];
         const currentDistance = Math.hypot(
           touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY
+          touch2.clientY - touch1.clientY,
         );
 
         const delta = (currentDistance - initialDistance) * scaleStep * 0.1;
@@ -354,41 +355,48 @@
       isScaling = false;
     }
 
+    // Define the throttle limit in fps
+    const throttleLimit = 16; 
+
+    // Create throttled versions of the high-frequency event handlers
+    const throttledMouseWheel = throttle(onMouseWheel, throttleLimit);
+    const throttledTouchMove = throttle(onTouchMove, throttleLimit);
+
     if ($store.useWindow) {
-      window.addEventListener("wheel", onMouseWheel, { passive: false });
+      window.addEventListener("wheel", throttledMouseWheel, { passive: false });
     } else {
-      node.addEventListener("wheel", onMouseWheel);
+      node.addEventListener("wheel", throttledMouseWheel);
       node.addEventListener("mousedown", handleDragStart);
       window.addEventListener("mouseup", handleDragEnd);
     }
 
     window.addEventListener("touchstart", onTouchStart);
-    window.addEventListener("touchmove", onTouchMove);
+    window.addEventListener("touchmove", throttledTouchMove);
     window.addEventListener("touchend", onTouchEnd);
 
     // Adding wheel event listener to the target element
     let target;
     switch ($store.dragEventTarget) {
       case "window":
-        window.addEventListener("wheel", onMouseWheel, { passive: false });
+        window.addEventListener("wheel", throttledMouseWheel, { passive: false });
         break;
       default:
         target = document.getElementById($store.dragEventTarget);
-        target.addEventListener("wheel", onMouseWheel);
+        target.addEventListener("wheel", throttledMouseWheel);
         break;
     }
 
     return {
       destroy() {
         if ($store.useWindow) {
-          window.removeEventListener("wheel", onMouseWheel);
+          window.removeEventListener("wheel", throttledMouseWheel);
         } else {
-          node.removeEventListener("wheel", onMouseWheel);
+          node.removeEventListener("wheel", throttledMouseWheel);
           node.removeEventListener("mousedown", handleDragStart);
           window.removeEventListener("mouseup", handleDragEnd);
         }
         window.removeEventListener("touchstart", onTouchStart);
-        window.removeEventListener("touchmove", onTouchMove);
+        window.removeEventListener("touchmove", throttledTouchMove);
         window.removeEventListener("touchend", onTouchEnd);
 
         // Remove wheel event listener from the target element

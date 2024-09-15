@@ -3,7 +3,7 @@
   import { beforeUpdate, onMount } from "svelte";
   import { applications } from "../../scripts/applicationsList";
   import { contentProperties, removeWindowStore, windowStores } from "../../scripts/storage";
-  import DraggableResizable from "../DraggableResizable.svelte";
+  import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { activateWindow, checkBoundaries, getAppIDsInAFrame } from "../../scripts/utils";
   import AppPreview from "./AppPreview.svelte";
   import { user } from "../../scripts/initGun";

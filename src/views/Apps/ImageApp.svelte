@@ -2,7 +2,7 @@
   import { get, writable } from "svelte/store";
   import { contentProperties, windowStores } from "../../scripts/storage";
   import { cleanGunData, generateRandomString, nowStr } from "../../scripts/utils";
-  import DraggableResizable from "../DraggableResizable.svelte";
+  import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import Background from "../Background.svelte";
   import { user } from "../../scripts/initGun";
   import { onMount } from "svelte";

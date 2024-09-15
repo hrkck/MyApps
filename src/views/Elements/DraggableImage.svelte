@@ -1,7 +1,7 @@
 <script>
   import { user } from "../../scripts/initGun";
   import { contentProperties } from "../../scripts/storage";
-  import DraggableResizable from "../DraggableResizable.svelte";
+  import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
 
   export let imageUrl;
   export let uniqueID;

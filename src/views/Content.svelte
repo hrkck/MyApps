@@ -4,7 +4,7 @@
   import { initUser, user } from "../scripts/initGun";
   import AppWindow from "./Apps/AppWindow.svelte";
   import Frame from "./Apps/Frame.svelte";
-  import DraggableResizable from "./DraggableResizable.svelte";
+  import DraggableResizable from "./DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
   import { deactivateWindow, getAppIDsInAFrame, getContainingRectangle } from "../scripts/utils";
 

@@ -1,6 +1,6 @@
 <!-- Frame.svelte -->
 <script>
-  import DraggableResizable from "../DraggableResizable.svelte";
+  import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { user } from "../../scripts/initGun";
   import { contentProperties, windowStores } from "../../scripts/storage";
   import { get } from "svelte/store";
