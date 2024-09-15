@@ -28,7 +28,6 @@
         deactivateWindow($contentProperties.activeWindow);
       }
 
-      console.log($contextMenu.visible);
       if ($contextMenu.visible) {
         $contextMenu.visible = false;
       }

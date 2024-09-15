@@ -1,9 +1,4 @@
 // applicationsList.js
-import ImageApp from "../views/Apps/ImageApp.svelte";
-import LinkApp from "../views/Apps/LinkApp.svelte";
-import TextEditor from "../views/Apps/TextEditor.svelte";
-import Frame from "../views/Apps/Frame.svelte";
-import ExampleApp from "../views/Apps/ExampleApp.svelte";
 
 const AppProperties = {
   windowType: "apps",
@@ -38,6 +33,7 @@ const FrameProperties = {
   isActiveDraggable: false,
   isActive: false,
 };
+
 // Applications:
 export const applications = [
   // { id: 1, title: "Text App", name: 'Hello World', content: 'Hello, World!'},
@@ -45,35 +41,35 @@ export const applications = [
     id: 1,
     name: "frame",
     title: "Frame Window",
-    component: Frame,
+    component: () => import("../views/Apps/Frame.svelte"),
     ...FrameProperties,
   },
   {
     id: 2,
     name: "linkApp",
     title: "Link App",
-    component: LinkApp,
+    component: () => import("../views/Apps/LinkApp.svelte"),
     ...AppProperties,
   },
   {
     id: 3,
     name: "textEditor",
     title: "Text Editor App",
-    component: TextEditor,
+    component: () => import("../views/Apps/TextEditor.svelte"),
     ...AppProperties,
   },
   {
     id: 4,
     name: "imageReferenceApp",
     title: "Image Reference Board",
-    component: ImageApp,
+    component: () => import("../views/Apps/ImageApp.svelte"),
     ...AppProperties,
   },
   {
-    id: 4,
+    id: 5, // Changed ID to 5 to avoid duplicate IDs
     name: "exampleApp",
     title: "Example App",
-    component: ExampleApp,
+    component: () => import("../views/Apps/ExampleApp.svelte"),
     ...AppProperties,
   },
   // ... add other applications;
@@ -83,7 +79,7 @@ const linkAppWidth = 80;
 const linkAppHeight = 80;
 const LinkAppData = {
   id: 2,
-  component: LinkApp,
+  component: () => import("../views/Apps/LinkApp.svelte"),
   name: "linkApp",
   title: "Link App",
   ...AppProperties,

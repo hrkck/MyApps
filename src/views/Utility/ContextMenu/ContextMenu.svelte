@@ -24,7 +24,7 @@
       case "frame":
         return FrameContext;
       case 'imageReferenceApp':
-        console.log('opening image refenrece app context menu');
+        // console.log('opening image refenrece app context menu');
         return ImageAppContextMenu
       default:
         return AppWindowContext;

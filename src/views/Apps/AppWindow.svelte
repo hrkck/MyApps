@@ -11,7 +11,9 @@
   export let uniqueID;
   let draggableComponent; // ref to draggable component
   const store = windowStores[uniqueID];
-  let appComponent = applications.find((data) => data.name == $store.name).component;
+  let appComponent = null; // Will hold the dynamically loaded component
+  let isLoading = false; // Flag to indicate if the component is loading
+  let loadError = null; // To capture any loading errors
 
   $store.contentScale = $contentProperties.scale;
   const draggableFunctions = {
@@ -86,8 +88,39 @@
     }
   }
 
+  // Function to dynamically load the component
+  async function loadAppComponent() {
+    if (appComponent || isLoading) return;
+    isLoading = true;
+    loadError = null;
+    try {
+      // Find the application data
+      const appData = applications.find(
+        (data) => data.name === $store.name
+      );
+      if (appData && typeof appData.component === "function") {
+        const module = await appData.component();
+        appComponent = module.default;
+      } else if (appData && appData.component) {
+        // Fallback if component is already imported
+        appComponent = appData.component;
+      } else {
+        throw new Error("Component not found for application.");
+      }
+    } catch (error) {
+      console.error("Failed to load component:", error);
+      loadError = error;
+    } finally {
+      isLoading = false;
+    }
+  }
+
+
   beforeUpdate(() => {
     checkShowIcon();
+    if (!showIcon && !appComponent && !isLoading) {
+      loadAppComponent();
+    }
   });
   onMount(() => {
     checkShowIcon();
@@ -105,11 +138,15 @@
 </script>
 
 <DraggableResizable {uniqueID} {store} {...draggableFunctions} bind:this={draggableComponent}>
-  <div id={uniqueID + "-appcontent"} class="app-content" style="" class:pointer-events={!$store.isActive}>
+  <div id={uniqueID + "-appcontent"} class="app-content" class:pointer-events={!$store.isActive}>
     {#if showIcon}
       <AppPreview {uniqueID} />
-    {:else}
-        <svelte:component this={appComponent} {uniqueID} />
+    {:else if appComponent}
+      <svelte:component this={appComponent} {uniqueID} />
+    {:else if isLoading}
+      <p>Loading...</p>
+    {:else if loadError}
+      <p>Error loading component.</p>
     {/if}
   </div>
 </DraggableResizable>
