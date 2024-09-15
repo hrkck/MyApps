@@ -3,14 +3,12 @@
   import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { contentProperties } from "../../scripts/storage";
   import { user } from "../../scripts/initGun";
-  import { get, writable } from "svelte/store";
   import { onMount } from "svelte";
   import { cleanGunData } from "../../scripts/utils";
 
   export let uniqueID;
   export let textStore;
   export let imageAppStore;
-  // let imageAppUniqueID = $imageAppStore.uniqueID;
   let mainAppStoreUniqueID = $imageAppStore.mainAppStoreID;
 
   const imageAppItemDraggableFunctions = {
@@ -19,7 +17,6 @@
         data.contentScale = $imageAppStore.scale * $contentProperties.scale;
         return data;
       });
-      // console.log($imageAppStore.scale , $contentProperties.scale);
     },
     dragEndFunc: function (store, event, x, y) {
       user
@@ -30,7 +27,6 @@
         .get(uniqueID)
         .get("textStoreData")
         .put({ x: x, y: y });
-      // console.log(x,y);
     },
     resizeStartFunc: function (store, event, x, y, width, height) {
       store.update((data) => {
@@ -47,22 +43,18 @@
         .get(uniqueID)
         .get("textStoreData")
         .put({ x: x, y: y, width: width, height: height });
-      // console.log(store, event, x, y, width, height);
     },
     scaleFunc: function (store, event, x, y, scale) {
       store.update((data) => {
         data.contentScale = $imageAppStore.scale * $contentProperties.scale;
         return data;
       });
-      // console.log($imageAppStore.scale, $contentProperties.scale);
     },
   };
 
-  // Function to handle the contentChanged event
   function handleContentChanged(event) {
-    const content = event.detail; // Access the dispatched data from the event
-    console.log("Received content from child component:", content);
-    saveToGunDB(content); // Call the function to save the content to GunDB
+    const content = event.detail;
+    saveToGunDB(content);
   }
 
   function saveToGunDB(content) {
@@ -118,6 +110,11 @@
         console.warn("Skipping block with no ID:", block);
       }
     });
+  }
+
+  function updateIsCursorInsideEditor(event) {
+    const isCursorInsideEditor = event.detail;
+    $imageAppStore.isCursorInsideEditor = isCursorInsideEditor;
   }
 
   onMount(async () => {
@@ -194,7 +191,11 @@
 
 <DraggableResizable {uniqueID} store={textStore} {...imageAppItemDraggableFunctions}>
   <div class="text-container">
-    <RichTextEditor {textStore} on:contentChanged={handleContentChanged} />
+    <RichTextEditor
+      {textStore}
+      on:isCursorInsideEditor={updateIsCursorInsideEditor}
+      on:contentChanged={handleContentChanged}
+    />
   </div>
 </DraggableResizable>
 

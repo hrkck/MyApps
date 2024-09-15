@@ -19,19 +19,15 @@
     switch (originalTargetID.split("-")[0]) {
       case "background":
         return ContentAreaContext;
-        break;
       case "mainContent":
         return ContentAreaContext;
-        break;
       case "frame":
         return FrameContext;
-        break;
-      case 'imageReferenceAppContent':
-        // console.log('opening image refenrece app context menu');
-        // return ImageAppContextMenu
+      case 'imageReferenceApp':
+        console.log('opening image refenrece app context menu');
+        return ImageAppContextMenu
       default:
         return AppWindowContext;
-        break;
     }
   }
 

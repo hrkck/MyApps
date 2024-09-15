@@ -45,7 +45,6 @@
         $store.x += dx / $store.contentScale;
         $store.y += dy / $store.contentScale;
       }
-      // console.log(dx / $store.contentScale || 0, dy / $store.contentScale || 0);
       dragMoveFunc(store, event, dx / $store.contentScale || 0, dy / $store.contentScale || 0);
     }, 8);
 
@@ -68,7 +67,6 @@
       window.addEventListener("touchmove", onMove, { passive: false });
       window.addEventListener("touchend", onEnd);
 
-      // console.log($store.x, $store.y);
       dragStartFunc(store, event, $store.x, $store.y);
     }
 
@@ -81,14 +79,13 @@
       window.removeEventListener("touchmove", onMove);
       window.removeEventListener("touchend", onEnd);
 
-      // console.log($store.x, $store.y);
       dragEndFunc(store, event, $store.x, $store.y);
     }
 
     let target;
-    console.log($store);
-    console.log(target);
-    console.log(node);
+    // console.log($store);
+    // console.log(target);
+    // console.log(node);
     switch ($store.dragEventTarget) {
       case "window":
         target = window;

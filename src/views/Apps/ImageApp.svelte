@@ -16,9 +16,9 @@
   // @ts-ignore
   const mainAppStore = windowStores[uniqueID];
   let images = [];
+  
   let texts = [];
-
-  // console.log($mainAppStore);
+  let isCursorInsideEditor = false;
 
   // bind with gundb init
   const imageAppStore = writable({
@@ -40,6 +40,7 @@
     scale: 1,
     zIndex: 2,
     isActiveDraggable: $mainAppStore.isActive,
+    isCursorInsideEditor: false,
     backgroundColor: "rgb(214, 255, 185)",
   });
   // @ts-ignore
@@ -68,12 +69,7 @@
     await initializeAppData();
     console.log($imageAppStore.dragEventTarget);
 
-  });
-
-  function resolvePath(pathArray) {
-    return pathArray.reduce((acc, key) => acc.get(key), user);
-  }
-  
+  });  
 
   async function fetchStoreData(dataType, key, storeProperty) {
     if (storeProperty === "textStoreData") {
@@ -310,8 +306,9 @@
             // Fetch the text store data without the blocks
             const textStoreData = await fetchTextStoreData("texts", key);
             const editorJSBlocks = await fetchStoreData("texts", key, "textStoreData");
-            console.log("Fetched editorJSBlocks:", editorJSBlocks);
+            // console.log("Fetched editorJSBlocks:", editorJSBlocks);
             // console.log("Fetched textStoreData:", textStoreData);
+            // console.log("And THIS IS DATA: ", data);
 
             // Initialize the textStore with the fetched data
             const textStore = writable({
@@ -432,6 +429,8 @@
 
   // Function to handle pasted text
   function handleTextPaste(text, x, y) {
+    if($imageAppStore.isCursorInsideEditor) return;
+
     const key = `ref-text-${nowStr()}`;
     if (texts.some((t) => t.key === key)) return;
 
@@ -604,7 +603,7 @@
 
       <!-- Text handling -->
       {#each texts as { key, textStore } (key)}
-        <Text uniqueID={key} {textStore} {imageAppStore} />
+        <Text uniqueID={key} {isCursorInsideEditor} {textStore} {imageAppStore} />
       {/each}
     </DraggableResizable>
     <Background store={imageAppStore} />

@@ -286,6 +286,9 @@ export const objectToArray = (object) => {
   return Object.keys(object).map((key) => object[key]);
 };
 
+function resolvePath(pathArray) {
+  return pathArray.reduce((acc, key) => acc.get(key), user);
+}
 
 export function cleanGunData(obj) {
   if (Array.isArray(obj)) {

@@ -11,13 +11,12 @@
   import ImageTool from "@editorjs/image";
 
   export let textStore;
-  // export let uniqueID;
-  // export let mainAppStoreUniqueID;
   const dispatch = createEventDispatcher();
-
+  
   let editor;
   let editorContainer;
   let isEditorReady = false;
+  let isCursorInsideEditor = false;
 
   const handleFileUpload = (file) => {
     return new Promise((resolve, reject) => {
@@ -81,6 +80,17 @@
       data: { blocks },
       onReady: () => {
         isEditorReady = true;
+
+        // Add event listeners to track cursor inside the editor
+        editorContainer.addEventListener("focusin", () => {
+          isCursorInsideEditor = true;
+          dispatch('isCursorInsideEditor', isCursorInsideEditor)
+        });
+
+        editorContainer.addEventListener("focusout", () => {
+          isCursorInsideEditor = false;
+          dispatch('isCursorInsideEditor', isCursorInsideEditor)
+        });
       },
       onChange: async () => {
         if (editor) {
@@ -108,20 +118,6 @@
       isEditorReady = true;
     } catch (reason) {
       console.log(`Editor.js initialization failed because of ${reason}`);
-    }
-  };
-
-  const updateEditorContent = async () => {
-    if (isEditorReady && editor) {
-      const blocks = get(textStore).blocks || [];
-      try {
-        const currentContent = await editor.save();
-        if (JSON.stringify(currentContent.blocks) !== JSON.stringify(blocks)) {
-          editor.render({ blocks });
-        }
-      } catch (error) {
-        console.error("Error updating content:", error);
-      }
     }
   };
 
@@ -190,6 +186,14 @@
   });
 
   onDestroy(() => {
+    // Clean up event listeners
+    editorContainer.removeEventListener("focusin", () => {
+      isCursorInsideEditor = true;
+    });
+    editorContainer.removeEventListener("focusout", () => {
+      isCursorInsideEditor = false;
+    });
+
     destroyEditor();
   });
 </script>
