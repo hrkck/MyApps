@@ -65,7 +65,7 @@
         delta = 0;
       } else {
         // go to URL if no movement took place
-        goToUrl();
+        // goToUrl();
       }
       node.removeEventListener("mousedown", mouseMove);
       node.removeEventListener("mousemove", mouseDown);
@@ -80,7 +80,9 @@
 <div class="link-container" id={$mainAppStore.uniqueID + "-appPreview"}>
   {#if isLinkApp}
     <div class="icon-link" use:clickHandle>
-      <img src={$iconData.iconUrl} alt="Icon" class="icon" />
+      <a href="{$mainAppStore.linkUrl}" target="_blank" style="width: 100%; height:100%;">
+        <img src={$iconData.iconUrl} alt="Icon" class="icon" style="width: 100%; height:100%;"/>
+      </a>
     </div>
   {:else}
     <!-- else content here -->

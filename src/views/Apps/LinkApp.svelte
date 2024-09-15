@@ -7,10 +7,10 @@
 
   export let uniqueID;
   const mainAppStore = windowStores[uniqueID];
-
+  console.log('HELOOOO');
   const linkData = writable({
     linkUrl: $mainAppStore.linkUrl || "",
-    iconUrl: "",
+    iconUrl: $mainAppStore.iconUrl || "",
   });
 
   function updateImageUrl() {
@@ -26,6 +26,8 @@
       }
       $linkData.linkUrl = inputUrl;
       $linkData.iconUrl = `https://www.google.com/s2/favicons?domain=${inputUrl}&sz=32`;
+      $mainAppStore.linkUrl = $linkData.linkUrl
+      $mainAppStore.iconUrl = $linkData.iconUrl
       // Save updated link and icon URLs to GunDB
       user.get("windows").get(uniqueID).get("linkAppData").get("linkUrl").put($linkData.linkUrl);
       user.get("windows").get(uniqueID).get("linkAppData").get("iconUrl").put($linkData.iconUrl);
@@ -37,6 +39,7 @@
   }
 
   onMount(async () => {
+    console.log($linkData.linkUrl);
     updateImageUrl();
     initData();
   });
@@ -57,11 +60,13 @@
 
 <div class="container ghost-slate" id={$mainAppStore.uniqueID+"-linkApp"}>
   <label for="url">Enter URL:</label>
-  <input type="text" id="url" bind:value={$linkData.linkUrl} on:input={updateImageUrl} />
+  <input type="text" id="url" bind:value={$mainAppStore.linkUrl} on:input={updateImageUrl} />
 
   {#if $linkData.iconUrl !== ""}
     <div class="favicon-container">
-      <img src={$linkData.iconUrl} alt="Favicon" class="favicon-image" />
+      <a href="{$linkData.linkUrl}" target="_blank">
+        <img src={$linkData.iconUrl} alt="Favicon" class="favicon-image" />
+      </a>
     </div>
   {:else}
     <!-- Display a placeholder or message if no image URL is available -->

@@ -15,6 +15,8 @@
   let isLoading = false; // Flag to indicate if the component is loading
   let loadError = null; // To capture any loading errors
 
+  const isLinkApp = uniqueID.split("-")[0] == "linkApp";
+
   $store.contentScale = $contentProperties.scale;
   const draggableFunctions = {
     dragStartFunc: function (store, event, x, y) {
@@ -138,7 +140,7 @@
 </script>
 
 <DraggableResizable {uniqueID} {store} {...draggableFunctions} bind:this={draggableComponent}>
-  <div id={uniqueID + "-appcontent"} class="app-content" class:pointer-events={!$store.isActive}>
+  <div id={uniqueID + "-appcontent"} class="app-content" class:pointer-events={!$store.isActive && !isLinkApp}>
     {#if showIcon}
       <AppPreview {uniqueID} />
     {:else if appComponent}
