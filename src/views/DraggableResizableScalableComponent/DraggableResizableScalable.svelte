@@ -2,7 +2,7 @@
 <script>
   import { user } from "../../scripts/initGun";
   import { contentProperties, contextMenu, windowStores } from "../../scripts/storage";
-    import { throttle } from "../../scripts/utils";
+  import { throttle } from "../../scripts/utils";
 
   export let dragStartFunc = function (store, event, x, y) {};
   export let dragMoveFunc = function (store, event, x, y) {};
@@ -124,6 +124,7 @@
   let resizing = false;
   let grabber = false;
   let aspectRatio = $store.width / $store.height;
+  $: grabberSize = 5 / $contentProperties.scale; // Base size is 10px
 
   if ($store.showGrabbers) {
     grabber = true;
@@ -278,15 +279,11 @@
       if ($contentProperties.isAWindowActive && !$store.isActiveDraggable) {
         return;
       }
-
-      // console.log('trying to scale');
-
       const rect = node.parentElement.getBoundingClientRect();
       const mouseX = initialDistance != 0 ? 1 : event.clientX - rect.left;
       const mouseY = initialDistance != 0 ? 1 : event.clientY - rect.top;
       let newScale = $store.scale * zoom;
 
-      // console.log(rect, mouseX, mouseY,  $store.scale, newScale);
       if (newScale > 0.05 && newScale < 7) {
         $store.x =
           ($store.x - mouseX / $store.contentScale) * (newScale / $store.scale) +
@@ -297,7 +294,6 @@
         $store.scale = newScale;
       }
       if ($store.scale == undefined) {
-        // console.log('resetting scale to 1:');
         $store.scale = 1;
       }
       scaleFunc(store, event, $store.x, $store.y, $store.scale);
@@ -310,7 +306,6 @@
       const zoom = Math.exp(wheel * scaleStep);
       changeScale(event, zoom);
     }
-
     function onTouchStart(event) {
       if (event.touches.length === 2) {
         const touch1 = event.touches[0];
@@ -321,7 +316,6 @@
         );
       }
     }
-
     function onTouchMove(event) {
       if (event.touches.length === 2) {
         const touch1 = event.touches[0];
@@ -356,7 +350,7 @@
     }
 
     // Define the throttle limit in fps
-    const throttleLimit = 16; 
+    const throttleLimit = 16;
 
     // Create throttled versions of the high-frequency event handlers
     const throttledMouseWheel = throttle(onMouseWheel, throttleLimit);
@@ -485,6 +479,7 @@
   class="draggable resizable"
   class:box-shadow={$store.boxShadow}
   style="
+  --grabber-size: {grabberSize}px;
   transform: scale({$store.scale}); 
   left: {$store.x}px; 
   top: {$store.y}px; 
@@ -521,90 +516,108 @@
     --active-green: green;
   }
 
+  /* Global grabber styles */
   :global(.grabber) {
     position: absolute;
     box-sizing: border-box;
+    width: var(--grabber-size, 10px);
+    height: var(--grabber-size, 10px);
+    /* background-color: var(--blue); Example background color */
+    transition:
+      width 0.2s,
+      height 0.2s; /* Smooth resizing */
   }
 
+  /* Hover effect for grabbers */
+  :global(.grabber:hover) {
+    background-color: rgba(0, 0, 0, 0.5);
+    transition:
+      background-color 0.2s,
+      width 0.2s,
+      height 0.2s;
+  }
+
+  /* Specific grabber positions and cursors */
   :global(.grabber.right) {
-    width: 10px;
+    width: var(--grabber-size, 10px);
     height: 100%;
-    right: -5px;
+    right: calc(-0.5 * var(--grabber-size, 10px));
     cursor: col-resize;
     top: 0;
   }
 
   :global(.grabber.left) {
-    width: 10px;
+    width: var(--grabber-size, 10px);
     height: 100%;
-    left: -5px;
+    left: calc(-0.5 * var(--grabber-size, 10px));
     cursor: col-resize;
     top: 0;
   }
 
   :global(.grabber.top) {
-    height: 10px;
+    height: var(--grabber-size, 10px);
     width: 100%;
-    top: -5px;
+    top: calc(-0.5 * var(--grabber-size, 10px));
     cursor: row-resize;
   }
 
   :global(.grabber.bottom) {
-    height: 10px;
+    height: var(--grabber-size, 10px);
     width: 100%;
-    bottom: -5px;
+    bottom: calc(-0.5 * var(--grabber-size, 10px));
     cursor: row-resize;
   }
 
+  /* Corner grabbers */
+  :global(.grabber.top-left),
+  :global(.grabber.top-right),
+  :global(.grabber.bottom-left),
+  :global(.grabber.bottom-right) {
+    height: var(--grabber-size, 10px);
+    width: var(--grabber-size, 10px);
+    border-radius: 50%;
+  }
+
   :global(.grabber.top-left) {
-    height: 10px;
-    width: 10px;
-    top: -5px;
-    left: -5px;
+    top: calc(-0.5 * var(--grabber-size, 10px));
+    left: calc(-0.5 * var(--grabber-size, 10px));
     cursor: nw-resize;
-    border-radius: 100%;
   }
 
   :global(.grabber.top-right) {
-    height: 10px;
-    width: 10px;
-    top: -5px;
-    right: -5px;
+    top: calc(-0.5 * var(--grabber-size, 10px));
+    right: calc(-0.5 * var(--grabber-size, 10px));
     cursor: ne-resize;
-    border-radius: 100%;
   }
 
   :global(.grabber.bottom-left) {
-    height: 10px;
-    width: 10px;
-    bottom: -5px;
-    left: -5px;
+    bottom: calc(-0.5 * var(--grabber-size, 10px));
+    left: calc(-0.5 * var(--grabber-size, 10px));
     cursor: sw-resize;
-    border-radius: 100%;
   }
 
   :global(.grabber.bottom-right) {
-    height: 10px;
-    width: 10px;
-    bottom: -5px;
-    right: -5px;
+    bottom: calc(-0.5 * var(--grabber-size, 10px));
+    right: calc(-0.5 * var(--grabber-size, 10px));
     cursor: se-resize;
-    border-radius: 100%;
   }
 
+  /* Hover effect for corner grabbers */
   :global(.grabber.top-left:hover),
   :global(.grabber.top-right:hover),
   :global(.grabber.bottom-left:hover),
   :global(.grabber.bottom-right:hover) {
-    height: 20px;
-    width: 20px;
+    height: calc(var(--grabber-size, 10px) * 2);
+    width: calc(var(--grabber-size, 10px) * 2);
   }
 
+  /* Hide grabber styles */
   :global(.hide-grabber) {
     background: transparent !important;
     border: none !important;
   }
 
+  /* Selected grabber styles */
   :global(.grabber.selected) {
     border: solid 1px black;
   }
