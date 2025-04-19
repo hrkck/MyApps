@@ -3,10 +3,12 @@
   import { contentProperties } from "../../scripts/storage";
   import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
 
-  export let imageUrl;
-  export let uniqueID;
-  export let imageStore;
-  export let imageAppStore;
+  let {
+    imageUrl,
+    uniqueID,
+    imageStore,
+    imageAppStore
+  } = $props();
   let imageAppUniqueID = $imageAppStore.mainAppStoreID;
   // console.log('FIRST PRINT OF MAIN APP ID:',imageAppUniqueID );
 

@@ -1,7 +1,13 @@
 <script>
-  export let label;
-  export let onClick;
-  export let color = "initial"; // Default color if not provided
+  /**
+   * @typedef {Object} Props
+   * @property {any} label
+   * @property {any} onClick
+   * @property {string} [color] - Default color if not provided
+   */
+
+  /** @type {Props} */
+  let { label, onClick, color = "initial" } = $props();
 
   function handleClick(event) {
     if (typeof onClick === "function") {
@@ -24,8 +30,8 @@
 
 <div
   class="context-menu-item"
-  on:click={handleClick}
-  on:keydown={handleKeydown}
+  onclick={handleClick}
+  onkeydown={handleKeydown}
   role="button"
   tabindex="0"
   style="background-color: {color};"

@@ -1,10 +1,19 @@
 <script>
-  // import { addWindow } from "../../js/utils.js";
+  import { run, createBubbler } from 'svelte/legacy';
 
-  export let applications;
+  const bubble = createBubbler();
+  
 
-  let searchQuery = "";
-  let searchResults = [];
+  /**
+   * @typedef {Object} Props
+   * @property {any} applications - import { addWindow } from "../../js/utils.js";
+   */
+
+  /** @type {Props} */
+  let { applications } = $props();
+
+  let searchQuery = $state("");
+  let searchResults = $state([]);
 
   function onSearchResultClick(result) {
     // addWindow(result);
@@ -18,7 +27,9 @@
     );
   }
 
-  $: searchResults = searchQuery ? fuzzySearch(searchQuery) : [];
+  run(() => {
+    searchResults = searchQuery ? fuzzySearch(searchQuery) : [];
+  });
 </script>
 
 <div id="searchBox">
@@ -30,8 +41,8 @@
   />
   <ul id="searchResults">
     {#each searchResults as result}
-      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-      <li on:keydown on:keyup on:keypress on:click={(e) => onSearchResultClick(result)}>
+      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+      <li onkeydown={bubble('keydown')} onkeyup={bubble('keyup')} onkeypress={bubble('keypress')} onclick={(e) => onSearchResultClick(result)}>
         {result.name}
       </li>
     {/each}

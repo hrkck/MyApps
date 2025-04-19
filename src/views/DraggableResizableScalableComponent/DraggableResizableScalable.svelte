@@ -1,21 +1,43 @@
 <!--  DraggabkeResizable.svelte -->
 <script>
+  import { stopPropagation } from 'svelte/legacy';
+
   import { user } from "../../scripts/initGun";
   import { contentProperties, contextMenu, windowStores } from "../../scripts/storage";
   import { throttle } from "../../scripts/utils";
 
-  export let dragStartFunc = function (store, event, x, y) {};
-  export let dragMoveFunc = function (store, event, x, y) {};
-  export let dragEndFunc = function (store, event, x, y) {};
-  export let resizeStartFunc = function (store, event, x, y, width, height) {};
-  export let resizeMoveFunc = function (store, event, x, y, width, height) {};
-  export let resizeEndFunc = function (store, event, x, y, width, height) {};
-  export let scaleFunc = function (store, event, x, y, scale) {};
-  export let clickFunc = function (store, event) {};
-  export let dbclickFunc = function (store, event) {};
 
-  export let uniqueID = "no-unique-id";
-  export let store;
+  /**
+   * @typedef {Object} Props
+   * @property {any} [dragStartFunc]
+   * @property {any} [dragMoveFunc]
+   * @property {any} [dragEndFunc]
+   * @property {any} [resizeStartFunc]
+   * @property {any} [resizeMoveFunc]
+   * @property {any} [resizeEndFunc]
+   * @property {any} [scaleFunc]
+   * @property {any} [clickFunc]
+   * @property {any} [dbclickFunc]
+   * @property {string} [uniqueID]
+   * @property {any} store
+   * @property {import('svelte').Snippet} [children]
+   */
+
+  /** @type {Props} */
+  let {
+    dragStartFunc = function (store, event, x, y) {},
+    dragMoveFunc = function (store, event, x, y) {},
+    dragEndFunc = function (store, event, x, y) {},
+    resizeStartFunc = function (store, event, x, y, width, height) {},
+    resizeMoveFunc = function (store, event, x, y, width, height) {},
+    resizeEndFunc = function (store, event, x, y, width, height) {},
+    scaleFunc = function (store, event, x, y, scale) {},
+    clickFunc = function (store, event) {},
+    dbclickFunc = function (store, event) {},
+    uniqueID = "no-unique-id",
+    store,
+    children
+  } = $props();
 
   // Draggable
   let isDragging = false;
@@ -121,7 +143,7 @@
   let resizing = false;
   let grabber = false;
   let aspectRatio = $store.width / $store.height;
-  $: grabberSize = 5 / $contentProperties.scale; // Base size is 10px
+  let grabberSize = $derived(5 / $contentProperties.scale); // Base size is 10px
 
   if ($store.showGrabbers) {
     grabber = true;
@@ -469,8 +491,8 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
   id={uniqueID}
   class="draggable resizable"
@@ -487,10 +509,10 @@
   use:draggable
   use:resize
   use:scalability
-  on:dblclick|stopPropagation={handleDoubleClick}
-  on:click|stopPropagation={handleClick}
+  ondblclick={stopPropagation(handleDoubleClick)}
+  onclick={stopPropagation(handleClick)}
 >
-  <slot>No child Component provided</slot>
+  {#if children}{@render children()}{:else}No child Component provided{/if}
 </div>
 
 <style>

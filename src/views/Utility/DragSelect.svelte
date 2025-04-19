@@ -5,12 +5,12 @@
   import { onMount, onDestroy } from "svelte";
   import { updateWindowStore } from "../../js/utils.js";
 
-  let isDraggingSelect = false;
-  let dragSelectDiv;
-  let dragSelectDivWidth = 0;
-  let dragSelectDivHeight = 0;
-  let dragSelectDivTop = "0px";
-  let dragSelectDivLeft = "0px";
+  let isDraggingSelect = $state(false);
+  let dragSelectDiv = $state();
+  let dragSelectDivWidth = $state(0);
+  let dragSelectDivHeight = $state(0);
+  let dragSelectDivTop = $state("0px");
+  let dragSelectDivLeft = $state("0px");
 
   function handleSelectMouseDown(event) {
     if (event.button === 0 && event.shiftKey) {

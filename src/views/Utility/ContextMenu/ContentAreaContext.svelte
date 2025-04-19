@@ -1,4 +1,7 @@
 <script>
+  import { createBubbler, preventDefault, stopPropagation } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import { applicationGroups, applications } from "../../../scripts/applicationsList";
   import { contextMenu, resetLocalStorage } from "../../../scripts/storage";
   import { addWindow, addWindowGroup } from "../../../scripts/utils";
@@ -55,7 +58,7 @@
     },
   ];
 
-  let submenuVisible = Array(menuItems.length).fill(false);
+  let submenuVisible = $state(Array(menuItems.length).fill(false));
 
   function handleBrowserContextMenu(event) {
     // Do nothing, allowing the default browser context menu to appear
@@ -66,14 +69,14 @@
   {#each menuItems as item, index}
     {#if item.submenu.length > 0}
       <li
-        on:focus
-        on:blur
-        on:mouseover={() => {
+        onfocus={bubble('focus')}
+        onblur={bubble('blur')}
+        onmouseover={() => {
           submenuVisible[index] = true;
         }}
-        on:mouseleave|preventDefault={() => {
+        onmouseleave={preventDefault(() => {
           submenuVisible[index] = false;
-        }}
+        })}
       >
         {item.label}
         <ul class="ghost-slate">
@@ -94,7 +97,7 @@
       <ContextMenuItem label={item.label} onClick={item.action} color={item.color} />
     {/if}
   {/each}
-  <li on:contextmenu|stopPropagation={handleBrowserContextMenu}>
+  <li oncontextmenu={stopPropagation(handleBrowserContextMenu)}>
     Right-Click Here For Default Menu
   </li>
 </ul>

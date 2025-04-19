@@ -6,9 +6,7 @@
   import { onMount } from "svelte";
   import { cleanGunData } from "../../scripts/utils";
 
-  export let uniqueID;
-  export let textStore;
-  export let imageAppStore;
+  let { uniqueID, textStore, imageAppStore } = $props();
   let mainAppStoreUniqueID = $imageAppStore.mainAppStoreID;
 
   const imageAppItemDraggableFunctions = {

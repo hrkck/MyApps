@@ -1,11 +1,11 @@
 <!-- LinkApp.svelte -->
 <script>
-  import { afterUpdate, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { getLocalStorage, windowStores } from "../../scripts/storage";
   import { writable } from "svelte/store";
   import { user } from "../../scripts/initGun";
 
-  export let uniqueID;
+  let { uniqueID } = $props();
   const mainAppStore = windowStores[uniqueID];
   console.log('HELOOOO');
   const linkData = writable({
@@ -60,7 +60,7 @@
 
 <div class="container ghost-slate" id={$mainAppStore.uniqueID+"-linkApp"}>
   <label for="url">Enter URL:</label>
-  <input type="text" id="url" bind:value={$mainAppStore.linkUrl} on:input={updateImageUrl} />
+  <input type="text" id="url" bind:value={$mainAppStore.linkUrl} oninput={updateImageUrl} />
 
   {#if $linkData.iconUrl !== ""}
     <div class="favicon-container">

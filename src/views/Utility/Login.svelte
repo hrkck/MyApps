@@ -1,17 +1,19 @@
 <!-- Login.svelte -->
 <script>
+  import { preventDefault } from 'svelte/legacy';
+
   import { onMount } from "svelte";
   import { gun, user } from "../../scripts/initGun";
   import SEA from "gun/sea";
 
-  export let handleToggleSettings = () => {
+  let { handleToggleSettings = () => {
     console.log("no handleToggleSettings function implemented");
-  };
+  } } = $props();
 
-  let alias = "";
-  let pass = "";
-  let showPassword = false; // State variable to toggle password visibility
-  let passwordInputType = "password";
+  let alias = $state("");
+  let pass = $state("");
+  let showPassword = $state(false); // State variable to toggle password visibility
+  let passwordInputType = $state("password");
 
   onMount(async () => {
     // Listen for authentication changes
@@ -132,18 +134,18 @@
   </p>
   <hr />
   <div>
-    <form on:submit|preventDefault={handleSubmit}>
+    <form onsubmit={preventDefault(handleSubmit)}>
       <label for="username">Username:</label>
       <input type="text" bind:value={alias} placeholder="Username" />
       <label for="password">Password:</label>
       <input
         type={passwordInputType}
         value={pass}
-        on:input={handlePasswordInput}
+        oninput={handlePasswordInput}
         placeholder="Password"
       />
       <!-- Eye icon button for toggling password visibility -->
-      <button type="button" class="eye-icon" on:click={togglePasswordVisibility}>
+      <button type="button" class="eye-icon" onclick={togglePasswordVisibility}>
         {#if showPassword}
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="red">
             <!-- SVG path for eye icon when password is visible -->
@@ -178,7 +180,7 @@
     </form>
   </div>
   <div>
-    <button on:click={signUp}>Sign Up</button>
+    <button onclick={signUp}>Sign Up</button>
   </div>
   <!-- {#if message}
       <p>{message}</p>

@@ -5,7 +5,7 @@
   import { writable } from "svelte/store";
   import { windowStores } from "../../scripts/storage";
 
-  export let uniqueID;
+  let { uniqueID } = $props();
   const isLinkApp = uniqueID.split("-")[0] == "linkApp";
   const mainAppStore = windowStores[uniqueID];
 

@@ -1,11 +1,11 @@
 <script>
   import { onDestroy } from "svelte";
 
-  export let uniqueID;
-  let count = 0;
+  let { uniqueID } = $props();
+  let count = $state(0);
 
-  let currentTime = "";
-  let currentDate = "";
+  let currentTime = $state("");
+  let currentDate = $state("");
 
   function increment() {
     count += 1;
@@ -40,7 +40,7 @@
 <div class="example-app">
   <p>uniqueID: {uniqueID}</p>
   <p>count: {count}</p>
-  <input type="button" value="increment" on:click={increment} />
+  <input type="button" value="increment" onclick={increment} />
   <br />
   <br>
   <p>Time: {currentTime}</p>

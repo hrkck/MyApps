@@ -1,5 +1,7 @@
 <!-- Settings.svelte -->
 <script>
+  import { preventDefault, stopPropagation } from 'svelte/legacy';
+
   // import { resetLocalStorage } from "../../store.js";
   import { writable } from "svelte/store";
   import { contentProperties, resetLocalStorage } from "../../scripts/storage";
@@ -7,7 +9,7 @@
   import { deactivateWindow } from "../../scripts/utils";
   import SEA from "gun/sea";
 
-  export let isSettingsOpen = writable(false);
+  let { isSettingsOpen = writable(false) } = $props();
   const activeTab = writable("Login/Register/Sync");
 
   function handleToggleSettings(e) {
@@ -30,21 +32,21 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div id="gear-button-container" on:contextmenu|preventDefault|stopPropagation={() => {}}>
-  <button on:click={handleToggleSettings} class="gear-button">&#x2699;</button>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div id="gear-button-container" oncontextmenu={stopPropagation(preventDefault(() => {}))}>
+  <button onclick={handleToggleSettings} class="gear-button">&#x2699;</button>
 </div>
 
 {#if $isSettingsOpen}
   <div id="settings-background">
     <div id="settings-window">
       <div class="nav-column">
-        <button on:click={() => setActiveTab("Login/Register/Sync")}>Login/Register/Sync</button>
-        <button on:click={() => setActiveTab("workspace data")}>Workspace Data</button>
-        <button on:click={() => setActiveTab("windows data")}>Windows Data</button>
-        <button on:click={() => setActiveTab("theme settings")}>Theme Settings</button>
-        <button on:click={() => setActiveTab("about")}>About</button>
-        <button on:click={() => setActiveTab("Reset Data")}>Reset Data</button>
+        <button onclick={() => setActiveTab("Login/Register/Sync")}>Login/Register/Sync</button>
+        <button onclick={() => setActiveTab("workspace data")}>Workspace Data</button>
+        <button onclick={() => setActiveTab("windows data")}>Windows Data</button>
+        <button onclick={() => setActiveTab("theme settings")}>Theme Settings</button>
+        <button onclick={() => setActiveTab("about")}>About</button>
+        <button onclick={() => setActiveTab("Reset Data")}>Reset Data</button>
       </div>
       <div class="content-column">
         {#if $activeTab === "Login/Register/Sync"}
@@ -71,7 +73,7 @@
         {/if}
         {#if $activeTab === "Reset Data"}
           <h1>RESET ALL DATA</h1>
-          <button on:click={handleResetWorkspace}>Reset Workspace</button>
+          <button onclick={handleResetWorkspace}>Reset Workspace</button>
         {/if}
       </div>
     </div>

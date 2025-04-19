@@ -1,8 +1,8 @@
 <script>
   import { addWindow } from "../../js/utils.js";
 
-  let defaultSelection = "default";
-  export let applications;
+  let defaultSelection = $state("default");
+  let { applications } = $props();
 
   function onSelectionChange(e) {
     defaultSelection = "default";
@@ -15,7 +15,7 @@
     <label for="applications">Add Application:</label>
   </div>
   <div>
-    <select id="applications" bind:value={defaultSelection} on:change={onSelectionChange}>
+    <select id="applications" bind:value={defaultSelection} onchange={onSelectionChange}>
       <option value="default">-- List</option>
       {#each applications as app}
         <option value={app.id}>{app.name}</option>

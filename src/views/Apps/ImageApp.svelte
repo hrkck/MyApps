@@ -1,4 +1,6 @@
 <script>
+  import { run } from 'svelte/legacy';
+
   import { get, writable } from "svelte/store";
   import { contentProperties, windowStores } from "../../scripts/storage";
   import { cleanGunData, generateRandomString, nowStr } from "../../scripts/utils";
@@ -9,15 +11,21 @@
   import Text from "../Elements/Text.svelte";
   import DraggableImage from "../Elements/DraggableImage.svelte";
 
-  // @ts-nocheck
+  
 
-  export let uniqueID;
-  export let draggableAreaElement;
+  /**
+   * @typedef {Object} Props
+   * @property {any} uniqueID
+   * @property {any} draggableAreaElement
+   */
+
+  /** @type {Props} */
+  let { uniqueID, draggableAreaElement = $bindable() } = $props();
   // @ts-ignore
   const mainAppStore = windowStores[uniqueID];
-  let images = [];
+  let images = $state([]);
   
-  let texts = [];
+  let texts = $state([]);
   let isCursorInsideEditor = false;
 
   // bind with gundb init
@@ -46,7 +54,7 @@
   // @ts-ignore
 
   // update active state across relevant components:
-  $: {
+  run(() => {
     // make each image also active when main app is active
     $imageAppStore.isActiveDraggable = $mainAppStore.isActive;
     images.forEach((imgObj) => {
@@ -63,7 +71,7 @@
         return data;
       });
     });
-  }
+  });
 
   onMount(async () => {
     await initializeAppData();
@@ -571,21 +579,21 @@
 <!-- main div should listen to -->
 <!-- paste event (ctrl+v) when mouse is over it and when the active window id equals uniqueid -->
 <!--  -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   id={$imageAppStore.uniqueID + "-mainDiv"}
   class="main-image-app"
-  on:mouseenter={() => self.addEventListener("paste", handlePaste)}
-  on:mouseleave={() => self.removeEventListener("paste", handlePaste)}
-  on:dragover={(event) => event.preventDefault()}
-  on:drop={handleDrop}
+  onmouseenter={() => self.addEventListener("paste", handlePaste)}
+  onmouseleave={() => self.removeEventListener("paste", handlePaste)}
+  ondragover={(event) => event.preventDefault()}
+  ondrop={handleDrop}
 >
   <div class="info-area ghost-slate">
-    <button on:click={clearImages}>Delete All Text and Images</button>
+    <button onclick={clearImages}>Delete All Text and Images</button>
     <span> Use CTRL + V or CMD + V (mac) to paste clipboard data</span>
   </div>
 
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     bind:this={draggableAreaElement}
     id={$imageAppStore.uniqueID + "-draggableArea"}

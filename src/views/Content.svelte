@@ -87,7 +87,7 @@
   });
 </script>
 
-<svelte:window on:keydown={handleKeyPress} on:click={draggableFunctions.clickFunc} />
+<svelte:window onkeydown={handleKeyPress} onclick={draggableFunctions.clickFunc} />
 
 <DraggableResizable
   uniqueID={$contentProperties.uniqueID}

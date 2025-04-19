@@ -1,6 +1,6 @@
 <!-- Background.svelte -->
 <script>
-  export let store;
+  let { store } = $props();
 </script>
 
 <div

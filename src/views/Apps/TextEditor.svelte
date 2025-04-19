@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { user } from "../../scripts/initGun"; // Import GunDB user
 
-  export let uniqueID;
+  let { uniqueID } = $props();
   const mainAppStore = windowStores[uniqueID];
 
   // Function to save the data to GunDB

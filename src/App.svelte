@@ -27,7 +27,7 @@
   }
 </script>
 
-<svelte:window on:contextmenu={showContextMenu} on:mousemove={trackMousePosition} on:dragover={trackMousePosition}/>
+<svelte:window oncontextmenu={showContextMenu} onmousemove={trackMousePosition} ondragover={trackMousePosition}/>
 
 <main id="app">
   <Content />
