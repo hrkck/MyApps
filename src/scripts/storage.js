@@ -115,8 +115,8 @@ export function removeWindowStore(uniqueID) {
 
 // Function to reset localStorage
 export function resetLocalStorage() {
-  const confirmed = window.confirm("Are you sure you want to clear localStorage and gundb?");
-  if (confirmed) {
+  // const confirmed = window.confirm("Are you sure you want to clear localStorage and gundb?");
+  // if (confirmed) {
     console.log("clearing localStorage AND gundb");
     sessionStorage.clear()
     localStorage.clear()
@@ -142,7 +142,7 @@ export function resetLocalStorage() {
     location.reload(); // Reload the page
     // user.get("windowsStore").put(null)
     // user.get("workspaceStore").put(null)
-  } else {
-    console.log("Reset canceled.");
-  }
+  // } else {
+    // console.log("Reset canceled.");
+  // }
 }

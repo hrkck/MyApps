@@ -1,5 +1,5 @@
 <script>
-  import { addWindow } from "../../js/utils.js";
+  import { addWindow } from "../../scripts/utils";
 
   let defaultSelection = $state("default");
   let { applications } = $props();

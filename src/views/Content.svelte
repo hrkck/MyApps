@@ -5,7 +5,7 @@
   import AppWindow from "./Apps/AppWindow.svelte";
   import Frame from "./Apps/Frame.svelte";
   import DraggableResizable from "./DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
-  import { contentProperties, contextMenu} from "../scripts/storage";
+  import { contentProperties, contextMenu } from "../scripts/storage";
   import { deactivateWindow, getAppIDsInAFrame, getContainingRectangle } from "../scripts/utils";
 
   const draggableFunctions = {
@@ -19,7 +19,21 @@
     },
     resizeEndFunc: function (store, event, x, y, width, height) {},
     resizeMoveFunc: function (store, event, x, y, width, height) {},
-    scaleFunc: function (store, event, x, y, scale) {},
+    scaleFunc: function (store, event, x, y, scale) {
+      store.update((store) => {
+        if (scale > 0.05 && scale < 7) {
+          store.x =
+            (store.x - x / store.contentScale) * (scale / store.scale) + x / store.contentScale;
+          store.y =
+            (store.y - y / store.contentScale) * (scale / store.scale) + y / store.contentScale;
+          store.scale = scale;
+        }
+        if (store.scale == undefined) {
+          store.scale = 1;
+        }
+        return store;
+      });
+    },
     clickFunc: function (store, event) {
       // deactivate any active app
       if ($contentProperties.isAWindowActive == "settings") {

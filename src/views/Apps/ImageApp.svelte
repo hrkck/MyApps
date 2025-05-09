@@ -1,17 +1,19 @@
 <script>
-  import { run } from 'svelte/legacy';
-
   import { get, writable } from "svelte/store";
   import { contentProperties, windowStores } from "../../scripts/storage";
-  import { cleanGunData, generateRandomString, nowStr } from "../../scripts/utils";
+  import {
+    cleanGunData,
+    generateRandomString,
+    listToObject,
+    nowStr,
+    unflattenToEditorJSData,
+  } from "../../scripts/utils";
   import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import Background from "../Background.svelte";
   import { user } from "../../scripts/initGun";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import Text from "../Elements/Text.svelte";
   import DraggableImage from "../Elements/DraggableImage.svelte";
-
-  
 
   /**
    * @typedef {Object} Props
@@ -21,12 +23,12 @@
 
   /** @type {Props} */
   let { uniqueID, draggableAreaElement = $bindable() } = $props();
-  // @ts-ignore
   const mainAppStore = windowStores[uniqueID];
+
   let images = $state([]);
-  
   let texts = $state([]);
-  let isCursorInsideEditor = false;
+  let pasteListener;
+  let shouldHandlePaste = false;
 
   // bind with gundb init
   const imageAppStore = writable({
@@ -48,13 +50,11 @@
     scale: 1,
     zIndex: 2,
     isActiveDraggable: $mainAppStore.isActive,
-    isCursorInsideEditor: false,
     backgroundColor: "rgb(214, 255, 185)",
   });
-  // @ts-ignore
 
   // update active state across relevant components:
-  run(() => {
+  $effect(() => {
     // make each image also active when main app is active
     $imageAppStore.isActiveDraggable = $mainAppStore.isActive;
     images.forEach((imgObj) => {
@@ -75,177 +75,13 @@
 
   onMount(async () => {
     await initializeAppData();
-    console.log($imageAppStore.dragEventTarget);
 
-  });  
+    document.addEventListener("paste", pasteListener, true);
+  });
 
-  async function fetchStoreData(dataType, key, storeProperty) {
-    if (storeProperty === "textStoreData") {
-      return fetchBlocksData(dataType, key);
-    }
-    return new Promise((resolve, reject) => {
-      user
-        .get("windows")
-        .get(uniqueID)
-        .get("imageAppData")
-        .get(dataType)
-        .get(key)
-        .get(storeProperty)
-        .once((data) => {
-          if (data) {
-            resolve(cleanGunData(data));
-          } else {
-            reject(new Error(`No data found for ${dataType}/${key}/${storeProperty}`));
-          }
-        });
-    });
-  }
-
-  async function fetchTextStoreData(dataType, key) {
-    return new Promise((resolve, reject) => {
-      user
-        .get("windows")
-        .get(uniqueID) // Use the appropriate uniqueID here
-        .get("imageAppData")
-        .get(dataType)
-        .get(key)
-        .get("textStoreData")
-        .once((data) => {
-          if (data) {
-            console.log("Fetching: ", dataType, key, cleanGunData(data));
-            resolve(cleanGunData(data));
-          } else {
-            reject(new Error(`No data found for ${dataType}/${key}/textStoreData`));
-          }
-        });
-    });
-  }
-
-  async function fetchBlocksData(dataType, key) {
-    return new Promise((resolve, reject) => {
-      user
-        .get("windows")
-        .get(uniqueID) // Use the appropriate uniqueID here
-        .get("imageAppData")
-        .get(dataType)
-        .get(key)
-        .get("textStoreData")
-        .get("blocks")
-        .once((data) => {
-          if (data) {
-            const blockPromises = Object.keys(data)
-              .filter((blockId) => blockId !== "_") // Skip blocks with ID '_'
-              .map((blockId) => {
-                // console.log("blockID: ", blockId);
-                return fetchBlockData(dataType, key, blockId);
-              });
-            Promise.all(blockPromises)
-              .then((blocks) => {
-                resolve(blocks.map(cleanGunData));
-              })
-              .catch((error) => {
-                reject(error);
-              });
-          } else {
-            reject(new Error(`No data found for ${dataType}/${key}/textStoreData/blocks`));
-          }
-        });
-    });
-  }
-
-  async function fetchBlockData(dataType, key, blockId) {
-    return new Promise((resolve, reject) => {
-      user
-        .get("windows")
-        .get(uniqueID)
-        .get("imageAppData")
-        .get(dataType)
-        .get(key)
-        .get("textStoreData")
-        .get("blocks")
-        .get(blockId)
-        .once(async (block) => {
-          if (block) {
-            // Fetch the actual data for the block
-            const data = await fetchBlockInnerData(dataType, key, blockId, "data");
-            block.data = data;
-            // console.log("BLOCK: |", cleanGunData(block));
-
-            // console.log("READHING SOMETHING:");
-            // let something = resolvePath(["windows", uniqueID, "imageAppData", 'textStoreData', key, "textStoreData", "blocks", blockId, 'data'])
-            // console.log("something: ", something);
-
-            // Fetch any nested image URLs
-            let whatever = await fetchNestedImageUrls(dataType, key, blockId);
-            // console.log("this is whatever: ", whatever);
-            block.data.file = {url: whatever.url}
-
-            resolve(cleanGunData(block));
-          } else {
-            reject(
-              new Error(`No block found for ${dataType}/${key}/textStoreData/blocks/${blockId}`),
-            );
-          }
-        });
-    });
-  }
-
-  async function fetchBlockInnerData(dataType, key, blockId, innerKey) {
-    return new Promise((resolve, reject) => {
-      user
-        .get("windows")
-        .get(uniqueID) // Use the appropriate uniqueID here
-        .get("imageAppData")
-        .get(dataType)
-        .get(key)
-        .get("textStoreData")
-        .get("blocks")
-        .get(blockId)
-        .get(innerKey)
-        .once((data) => {
-          if (data) {
-            console.log("block inner data:");
-            console.log(data);
-            resolve(cleanGunData(data));
-          } else {
-            reject(
-              new Error(
-                `No data found for ${dataType}/${key}/textStoreData/blocks/${blockId}/${innerKey}`,
-              ),
-            );
-          }
-        });
-    });
-  }
-
-  async function fetchNestedImageUrls(dataType, key, blockId) {
-    return new Promise((resolve, reject) => {
-      user
-        .get("windows")
-        .get(uniqueID) // Use the appropriate uniqueID here
-        .get("imageAppData")
-        .get(dataType)
-        .get(key)
-        .get("textStoreData")
-        .get("blocks")
-        .get(blockId)
-        .get("data")
-        // .get("file") FOR SOME REASON I CANNOT SAVE IN FILE AS EDITORJS SAVES IT
-        .once((data) => {
-          if (data) {
-            // console.log("SUPPOSED IMAGE DATA:", data);
-            // console.log(data);
-            resolve(cleanGunData(data));
-          } else {
-            reject(
-              new Error(
-                `No data found for ${dataType}/${key}/textStoreData/blocks/${blockId}/file/data/url`,
-              ),
-            );
-          }
-        });
-    });
-  }
+  onDestroy(() => {
+    document.removeEventListener("paste", pasteListener, true);
+  });
 
   async function initializeAppData() {
     // Save initial x,y and scale to gundb first. That is not done, so it is breaking the data integrity
@@ -255,8 +91,8 @@
       .get("workspaceData")
       .once((data) => {
         if (data) {
-          // console.log("first image app data: ", data);
-          // console.log("data scale: ", data.scale);
+          console.log("first image app data: ", data);
+          console.log("data scale: ", data.scale);
           $imageAppStore.x = data.x;
           $imageAppStore.y = data.y;
           $imageAppStore.scale = data.scale;
@@ -266,8 +102,6 @@
 
     // Fetch and initialize data from GunDB
     // Initialize images from GunDB
-
-    // console.log(uniqueID);
     user
       .get("windows")
       .get(uniqueID)
@@ -276,16 +110,26 @@
       .map()
       .once(async (data, key) => {
         if (data && data.imageUrl && data.imageUrl != "d") {
-          if (images.some((img) => img.key === key)) return;
           try {
-            let imageStoreData = await fetchStoreData("images", key, "imageStoreData");
-            // console.log("images ImageStoreData for key: ", key);
-            // console.log(imageStoreData);
-            const imageStore = writable({
-              ...imageStoreData,
-              imageUrl: data.imageUrl,
-            });
-            images = [...images, { imageUrl: data.imageUrl, key, imageStore }];
+            const node = user
+              .get("windows")
+              .get(uniqueID)
+              .get("imageAppData")
+              .get("images")
+              .get(key)
+              .get("imageStoreData")
+              .once((storeData) => {
+                const existing = images.find((t) => t.key === storeData.uniqueID);
+                if (existing) {
+                  existing.imageStore.set(storeData); // update existing
+                } else {
+                  const imageStore = writable({ ...storeData });
+                  images = [
+                    ...images,
+                    { imageUrl: data.imageUrl, key: storeData.uniqueID, imageStore },
+                  ];
+                }
+              });
           } catch (error) {
             console.error(error);
           }
@@ -293,66 +137,99 @@
       });
 
     // Initialize texts from GunDB
-    console.log("initing text:");
+    let textStoresData = [];
+    let blocks = [];
     user
       .get("windows")
       .get(uniqueID)
       .get("imageAppData")
       .get("texts")
       .map()
-      .once(async (data, key) => {
-        // console.log(data, key);
-        if (data && key) {
-          if (texts.some((t) => t.key === key)) {
-            // console.log(texts);
-            return;
-          }
-          try {
-            // console.log('Trying to init "text block", here is the ID:');
-            // console.log(key);
+      .get("textStoreData")
+      .once((data) => {
+        if (data) {
+          data = { ...cleanGunData(data), blocks: [] };
+          textStoresData.push({ ...data });
+        }
+      })
+      .get("blocks")
+      .map()
+      .once((block) => {
+        if (block && block.textStoreID) {
+          blocks.push(cleanGunData(block));
+        }
 
-            // Fetch the text store data without the blocks
-            const textStoreData = await fetchTextStoreData("texts", key);
-            const editorJSBlocks = await fetchStoreData("texts", key, "textStoreData");
-            // console.log("Fetched editorJSBlocks:", editorJSBlocks);
-            // console.log("Fetched textStoreData:", textStoreData);
-            // console.log("And THIS IS DATA: ", data);
-
-            // Initialize the textStore with the fetched data
-            const textStore = writable({
-              ...textStoreData,
-              text: data.text,
-              blocks: editorJSBlocks,
-              _: "cleared-gundb-output",
-            });
-
-            texts = [...texts, { key, textStore }];
-          } catch (error) {
-            console.error(error);
+        blocks = unflattenToEditorJSData(blocks);
+        for (const block of blocks) {
+          const storeData = textStoresData.find((ts) => ts.uniqueID === block.textStoreID);
+          if (storeData) {
+            storeData.blocks.push(block);
+            storeData.blocks.sort((a, b) => a.order - b.order);
+            const existing = texts.find((t) => t.key === storeData.uniqueID);
+            if (existing) {
+              existing.textStore.set(storeData); // update existing
+            } else {
+              const textStore = writable(storeData);
+              texts = [...texts, { key: storeData.uniqueID, textStore }];
+            }
           }
         }
       });
+
+    // console.log(textStoresData);
+    // console.log(blocks);
+
+    // blocks = unflattenToEditorJSData(blocks);
+    // for (const block of blocks) {
+    //   const store = textStoresData.find((ts) => ts.uniqueID === block.textStoreID);
+    //   if (store) {
+    //     store.blocks.push(block);
+    //   }
+    // }
+
+    // Sort the blocks by their order value
+    // textStoresData.forEach((storeData) => {
+    //   storeData.blocks.sort((a, b) => a.order - b.order);
+    //   const textStore = writable(storeData);
+    //   const key = storeData.uniqueID;
+
+    //   texts = [...texts, { key, textStore }];
+    // });
+
+    console.log(texts);
   }
 
   const draggableFunctions = {
     dragStartFunc: function (store, event, x, y) {
-      // console.log("drag starting , ", $mainAppStore.isActive);
       store.update((data) => {
         data.contentScale = $contentProperties.scale;
         return data;
       });
     },
-    // @ts-ignore
     dragEndFunc: async function (store, event, x, y) {
       user.get("windows").get(uniqueID).get("workspaceData").put({ x: x, y: y });
     },
     scaleFunc: function (store, event, x, y, scale) {
-      // console.log('trying to scale 2');
-      store.update((data) => {
-        data.contentScale = $contentProperties.scale;
-        return data;
+      if ($imageAppStore.isCursorInsideEditor) return;
+      if (scale == undefined) scale = 1;
+
+      store.update((store) => {
+        store.contentScale = $contentProperties.scale;
+        if (scale > 0.05 && scale < 7) {
+          store.x =
+            (store.x - x / store.contentScale) * (scale / store.scale) + x / store.contentScale;
+          store.y =
+            (store.y - y / store.contentScale) * (scale / store.scale) + y / store.contentScale;
+          store.scale = scale;
+        }
+        return store;
       });
-      user.get("windows").get(uniqueID).get("workspaceData").put({ x: x, y: y, scale: scale });
+
+      user
+        .get("windows")
+        .get(uniqueID)
+        .get("workspaceData")
+        .put({ x: x, y: y, scale: scale, contentScale: $contentProperties.scale });
     },
   };
 
@@ -371,27 +248,28 @@
     scale: 1,
     zIndex: 2,
     isActiveDraggable: $mainAppStore.isActive,
+    isCursorInsideEditor: false,
     imageAppBackgroundX: 0,
     imageAppBackgroundY: 0,
     imageAppBackgroundScale: 1,
   };
 
   // Assuming `x` and `y` are the mouse event's clientX and clientY
-  function calculateImagePosition(x, y) {
-    // Step 1: Get the bounding rectangle of the green area (image app)
-    const rect = draggableAreaElement.getBoundingClientRect();
-    const coordinates = { x: rect.left + window.scrollX, y: rect.top + window.scrollY };
+  // function calculateImagePosition(x, y) {
+  //   // Step 1: Get the bounding rectangle of the green area (image app)
+  //   const rect = draggableAreaElement.getBoundingClientRect();
+  //   const coordinates = { x: rect.left + window.scrollX, y: rect.top + window.scrollY };
 
-    // Step 2: Adjust for the main content's scaling and translation
-    const mainContentX = (x - coordinates.x - $contentProperties.x) / $contentProperties.scale;
-    const mainContentY = (y - coordinates.y - $contentProperties.y) / $contentProperties.scale;
+  //   // Step 2: Adjust for the main content's scaling and translation
+  //   const mainContentX = (x - coordinates.x - $contentProperties.x) / $contentProperties.scale;
+  //   const mainContentY = (y - coordinates.y - $contentProperties.y) / $contentProperties.scale;
 
-    // Step 3: Adjust for the image app's scaling and translation within the main content
-    const imageAppX = (mainContentX - $imageAppStore.x) / $imageAppStore.scale;
-    const imageAppY = (mainContentY - $imageAppStore.y) / $imageAppStore.scale;
+  //   // Step 3: Adjust for the image app's scaling and translation within the main content
+  //   const imageAppX = (mainContentX - $imageAppStore.x) / $imageAppStore.scale;
+  //   const imageAppY = (mainContentY - $imageAppStore.y) / $imageAppStore.scale;
 
-    return { x: imageAppX, y: imageAppY };
-  }
+  //   return { x: imageAppX, y: imageAppY };
+  // }
 
   // Function to handle pasted or dropped images
   function handleImageData(imageUrl, x, y) {
@@ -403,7 +281,7 @@
       const rect = draggableAreaElement.getBoundingClientRect();
       coordinates = { x: rect.left + window.scrollX, y: rect.top + window.scrollY };
 
-      const { x: imageX, y: imageY } = calculateImagePosition(x, y);
+      // const { x: imageX, y: imageY } = calculateImagePosition(x, y);
 
       const imageStore = writable({
         uniqueID: key,
@@ -437,8 +315,6 @@
 
   // Function to handle pasted text
   function handleTextPaste(text, x, y) {
-    if($imageAppStore.isCursorInsideEditor) return;
-
     const key = `ref-text-${nowStr()}`;
     if (texts.some((t) => t.key === key)) return;
 
@@ -448,22 +324,22 @@
 
     // Initialize the blocks data in GunDB
     let randomBlockID = generateRandomString(10);
-    const blocks = [{ id: randomBlockID, type: "paragraph", data: { text: text } }];
+    const blocks = [
+      { textStoreID: key, order: 0, id: randomBlockID, type: "paragraph", data: { text: text } },
+    ];
 
+    const objBlocks = listToObject(blocks);
     const textStore = writable({
-      text: text,
       uniqueID: key,
       boxShadow: true,
       keepRatio: false,
       width: 200,
       height: 200,
-      // blocks: blocks,
+      blocks: objBlocks,
       ...itemProperties,
       x: ((x - coordinates.x) / $contentProperties.scale - $imageAppStore.x) / $imageAppStore.scale,
       y: ((y - coordinates.y) / $contentProperties.scale - $imageAppStore.y) / $imageAppStore.scale,
     });
-
-    texts = [...texts, { key, textStore }];
 
     // Save text data to GunDB
     const textStoreData = get(textStore);
@@ -477,50 +353,53 @@
         if (ack.err) {
           console.error("Error saving text to GunDB:", ack.err);
         } else {
-          console.log("Successfully saved text to GunDB:", ack);
+          // console.log("Successfully saved text to GunDB:", ack);
         }
       });
 
-      textStore.update((store)=>{
-        const newStore = {blocks:blocks, ...store};
-        return newStore;
-      })
-    
-    console.log("pretending to put blocks in gundb when pasting text");
-    blocks.forEach((block) => {
-      user
-        .get("windows")
-        .get(uniqueID)
-        .get("imageAppData")
-        .get("texts")
-        .get(key)
-        .get("textStoreData")
-        .get("blocks")
-        .get(block.id)
-        .put(block, (ack) => {
-          if (ack.err) {
-            console.error("Error saving block to GunDB:", ack.err);
-          } else {
-            console.log(`Successfully saved block ${block.id} to GunDB:`, block);
-          }
-        });
+    textStore.update((store) => {
+      const newStore = { ...store, blocks: blocks };
+      return newStore;
     });
+    texts = [...texts, { key, textStore }];
   }
 
+  //  on mouseenter
+  function enablePasteHandler() {
+    shouldHandlePaste = true;
+  }
+
+  //  on mouseleave
+  function disablePasteHandler() {
+    shouldHandlePaste = false;
+  }
+
+  pasteListener = (event) => {
+    if (!shouldHandlePaste) return;
+    // Don't interfere if any Editor has focus
+    if (texts.some((text) => get(text.textStore).isCursorInsideEditor)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation(); // <--- this is critical
+
+    const items = event.clipboardData.items;
+    handlePaste(items);
+
+    // Add listener in capture phase to beat Editor.js
+  };
+
   // Function to handle paste event (supporting both images and text)
-  function handlePaste(event) {
+  function handlePaste(items) {
     // GET MOUSE X AND Y data from event
     // Initialize items at these locations
-    const items = event.clipboardData.items;
-
     for (let index = 0; index < items.length; index++) {
       const item = items[index];
       if (item.kind === "file" && item.type.includes("image")) {
         const blob = item.getAsFile();
         const reader = new FileReader();
         reader.onload = (e) => {
-          // console.log(e);
-          // console.log(event);
           handleImageData(e.target.result, $contentProperties.mouseX, $contentProperties.mouseY);
         };
         reader.readAsDataURL(blob);
@@ -574,6 +453,13 @@
     images = [];
     texts = [];
   }
+
+  function fin() {
+    // console.log("mouse over green area");
+  }
+  function fout() {
+    // console.log("mouse OUT OF green area");
+  }
 </script>
 
 <!-- main div should listen to -->
@@ -583,8 +469,8 @@
 <div
   id={$imageAppStore.uniqueID + "-mainDiv"}
   class="main-image-app"
-  onmouseenter={() => self.addEventListener("paste", handlePaste)}
-  onmouseleave={() => self.removeEventListener("paste", handlePaste)}
+  onmouseenter={enablePasteHandler}
+  onmouseleave={disablePasteHandler}
   ondragover={(event) => event.preventDefault()}
   ondrop={handleDrop}
 >
@@ -594,10 +480,13 @@
   </div>
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_mouse_events_have_key_events -->
   <div
     bind:this={draggableAreaElement}
     id={$imageAppStore.uniqueID + "-draggableArea"}
     class="draggable-area"
+    onmouseenter={fin}
+    onmouseleave={fout}
   >
     <DraggableResizable
       uniqueID={$imageAppStore.uniqueID}
@@ -611,7 +500,7 @@
 
       <!-- Text handling -->
       {#each texts as { key, textStore } (key)}
-        <Text uniqueID={key} {isCursorInsideEditor} {textStore} {imageAppStore} />
+        <Text uniqueID={key} {textStore} {imageAppStore} />
       {/each}
     </DraggableResizable>
     <Background store={imageAppStore} />

@@ -6,13 +6,15 @@ import "gun/lib/radix";
 import "gun/lib/radisk";
 import "gun/lib/store";
 import "gun/lib/rindexed";
-import "gun/axe";
+// import "gun/axe";
 import { generateRandomPassword, generateRandomUsername } from "./utils";
 import { addWindowStore } from "./storage";
 
 export const gun = Gun({
   localStorage: false, // use indexdb
-  peers: ["https://hakkisapps.labb.top/gun"],
+  peers: ["wss://myapps.ideasofhakki.com/gun"],
+  radata: false,
+  axe: false,
 });
 export const SEA = Gun.SEA;
 export const user = gun.user(); //.recall({ sessionStorage: false });

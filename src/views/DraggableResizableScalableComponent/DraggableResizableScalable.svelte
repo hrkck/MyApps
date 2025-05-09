@@ -5,6 +5,7 @@
   import { user } from "../../scripts/initGun";
   import { contentProperties, contextMenu, windowStores } from "../../scripts/storage";
   import { throttle } from "../../scripts/utils";
+    import { scale } from 'svelte/transition';
 
 
   /**
@@ -93,6 +94,7 @@
     }
 
     function onEnd(event) {
+      onMove.cancel?.();
       isDragging = false;
       lastTouchX = undefined;
       lastTouchY = undefined;
@@ -302,20 +304,9 @@
       const mouseX = initialDistance != 0 ? 1 : event.clientX - rect.left;
       const mouseY = initialDistance != 0 ? 1 : event.clientY - rect.top;
       let newScale = $store.scale * zoom;
-
-      if (newScale > 0.05 && newScale < 7) {
-        $store.x =
-          ($store.x - mouseX / $store.contentScale) * (newScale / $store.scale) +
-          mouseX / $store.contentScale;
-        $store.y =
-          ($store.y - mouseY / $store.contentScale) * (newScale / $store.scale) +
-          mouseY / $store.contentScale;
-        $store.scale = newScale;
-      }
-      if ($store.scale == undefined) {
-        $store.scale = 1;
-      }
-      scaleFunc(store, event, $store.x, $store.y, $store.scale);
+      
+      // apply the scale in callback
+      scaleFunc(store, event, mouseX, mouseY, newScale);
     }
 
     function onMouseWheel(event) {
@@ -323,6 +314,8 @@
       event.preventDefault();
       const wheel = event.deltaY < 0 ? 1 : -1;
       const zoom = Math.exp(wheel * scaleStep);
+      
+      if($store.scale == undefined) $store.scale = 1;
       changeScale(event, zoom);
     }
     function onTouchStart(event) {

@@ -1,6 +1,6 @@
 <!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate. Please migrate by hand. -->
 <script>
-  import { onMount, afterUpdate, onDestroy, createEventDispatcher } from "svelte";
+  import { onMount, onDestroy, createEventDispatcher, tick } from "svelte";
   import { get } from "svelte/store";
   import EditorJS from "@editorjs/editorjs";
   import Header from "@editorjs/header";
@@ -11,13 +11,13 @@
   import InlineCode from "@editorjs/inline-code";
   import ImageTool from "@editorjs/image";
 
-  export let textStore;
   const dispatch = createEventDispatcher();
-  
+
   let editor;
   let editorContainer;
   let isEditorReady = false;
-  let isCursorInsideEditor = false;
+
+  let { textStore } = $props();
 
   const handleFileUpload = (file) => {
     return new Promise((resolve, reject) => {
@@ -39,7 +39,7 @@
 
   const initializeEditor = async () => {
     if (editor) {
-      console.log("Editor already initialized.");
+      // console.log("Editor already initialized.");
       return;
     }
 
@@ -83,19 +83,22 @@
         isEditorReady = true;
 
         // Add event listeners to track cursor inside the editor
-        editorContainer.addEventListener("focusin", () => {
-          isCursorInsideEditor = true;
-          dispatch('isCursorInsideEditor', isCursorInsideEditor)
-        });
+        // editorContainer.addEventListener("focusin", () => {
+        //   isCursorInsideEditor = true;
+        //   dispatch("isCursorInsideEditor", isCursorInsideEditor);
+        // });
 
-        editorContainer.addEventListener("focusout", () => {
-          isCursorInsideEditor = false;
-          dispatch('isCursorInsideEditor', isCursorInsideEditor)
-        });
+        // editorContainer.addEventListener("focusout", () => {
+        //   isCursorInsideEditor = false;
+        //   dispatch("isCursorInsideEditor", isCursorInsideEditor);
+        // });
       },
       onChange: async () => {
         if (editor) {
           try {
+            // TODO : check here if editor.save returns blocks with custom id property, to tell blocks apart
+            // we need that info to save things to gunDB in order
+            // because gundb is a graph network, order of lines of text get shuffled
             const content = await editor.save();
             if (validateBlocks(content.blocks)) {
               textStore.update((store) => {
@@ -115,7 +118,7 @@
 
     try {
       await editor.isReady;
-      console.log("Editor.js is ready to work!");
+      // console.log("Editor.js is ready to work!");
       isEditorReady = true;
     } catch (reason) {
       console.log(`Editor.js initialization failed because of ${reason}`);
@@ -173,28 +176,37 @@
     );
   };
 
+  $effect.pre(() => {
+    // console.log("the component is about to update");
+    $textStore.isCursorInsideEditor;
+    tick().then(() => {
+      // console.log("the component just updated");
+      // console.log($textStore.isCursorInsideEditor);
+      if (!$textStore.isCursorInsideEditor) {
+        const editable = editorContainer?.querySelector('[contenteditable="true"]');
+        if (editable && document.activeElement === editable) {
+          editable.blur();
+          console.log("Editor was blurred manually");
+        }
+      }
+    });
+  });
+
   onMount(() => {
     initializeEditor();
   });
 
-  afterUpdate(() => {
-    const blocks = get(textStore).blocks || [];
-    if (isEditorReady) {
-      // updateEditorContent();
-    } else if (Array.isArray(blocks) && blocks.length > 0 && typeof blocks[0] === "object") {
-      initializeEditor();
-    }
-  });
+  // afterUpdate(() => {
+  //   const blocks = get(textStore).blocks || [];
+  //   if (isEditorReady) {
+  //     // updateEditorContent();
+  //   } else if (Array.isArray(blocks) && blocks.length > 0 && typeof blocks[0] === "object") {
+  //     initializeEditor();
+  //   }
+  // });
 
   onDestroy(() => {
     // Clean up event listeners
-    editorContainer.removeEventListener("focusin", () => {
-      isCursorInsideEditor = true;
-    });
-    editorContainer.removeEventListener("focusout", () => {
-      isCursorInsideEditor = false;
-    });
-
     destroyEditor();
   });
 </script>

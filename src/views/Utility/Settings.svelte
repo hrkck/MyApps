@@ -8,6 +8,8 @@
   import Login from "./Login.svelte";
   import { deactivateWindow } from "../../scripts/utils";
   import SEA from "gun/sea";
+    import ConfirmDialog from './ConfirmDialog.svelte';
+    import { customConfirm, handleConfirmResponse, message, visible } from '../../scripts/confirm';
 
   let { isSettingsOpen = writable(false) } = $props();
   const activeTab = writable("Login/Register/Sync");
@@ -23,9 +25,33 @@
     }
   }
 
-  function handleResetWorkspace(e) {
+  async function handleClick() {
+    const answer = await customConfirm("Do you really want to delete this?");
+    if (answer) {
+      console.log("Confirmed");
+    } else {
+      console.log("Cancelled");
+    }
+  }
+
+  function onConfirmDelete(response) {
+    handleConfirmResponse(response);
     resetLocalStorage();
   }
+
+  function onCancelDelete() {
+    handleConfirmResponse(false);
+  }
+
+  async function handleResetWorkspace() {
+    const answer = await customConfirm("Do you really want to delete this?");
+    if (answer) {
+      console.log("Confirmed");
+    } else {
+      console.log("Cancelled");
+    }
+  }
+
 
   function setActiveTab(tab) {
     activeTab.set(tab);
@@ -74,6 +100,14 @@
         {#if $activeTab === "Reset Data"}
           <h1>RESET ALL DATA</h1>
           <button onclick={handleResetWorkspace}>Reset Workspace</button>
+
+
+          <ConfirmDialog
+          bind:visible={$visible}
+          bind:message={$message}
+          onConfirm={onConfirmDelete}
+          onCancel={onCancelDelete}
+          />
         {/if}
       </div>
     </div>

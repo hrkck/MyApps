@@ -12,10 +12,10 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tsconfig/svelte": "^5.0.4",
-    "svelte": "^5.23.1",
-    "svelte-check": "^4.1.5",
+    "svelte": "^5.28.2",
+    "svelte-check": "^4.1.7",
     "typescript": "~5.7.2",
-    "vite": "^6.3.1"
+    "vite": "^6.3.5"
   },
   "dependencies": {
     "@editorjs/checklist": "^1.6.0",
@@ -24,7 +24,7 @@
     "@editorjs/header": "^2.8.8",
     "@editorjs/image": "^2.10.2",
     "@editorjs/inline-code": "^1.5.1",
-    "@editorjs/list": "^2.0.6",
+    "@editorjs/list": "^2.0.8",
     "@editorjs/quote": "^2.7.6",
     "gun": "^0.2020.1240"
   }

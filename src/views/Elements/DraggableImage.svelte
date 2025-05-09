@@ -70,10 +70,10 @@
         // console.log(x,y,height,width);
     },
     scaleFunc: function (store, event, x, y, scale) {
-      store.update((data) => {
-        data.contentScale = $imageAppStore.scale * $contentProperties.scale;
-        return data;
-      });
+      // store.update((data) => {
+      //   data.contentScale = $imageAppStore.scale * $contentProperties.scale;
+      //   return data;
+      // });
     },
   };
 </script>

@@ -4,7 +4,7 @@
   import { contentProperties } from "../../scripts/storage";
   import { user } from "../../scripts/initGun";
   import { onMount } from "svelte";
-  import { cleanGunData } from "../../scripts/utils";
+  import { flattenEditorJSData } from "../../scripts/utils";
 
   let { uniqueID, textStore, imageAppStore } = $props();
   let mainAppStoreUniqueID = $imageAppStore.mainAppStoreID;
@@ -43,10 +43,10 @@
         .put({ x: x, y: y, width: width, height: height });
     },
     scaleFunc: function (store, event, x, y, scale) {
-      store.update((data) => {
-        data.contentScale = $imageAppStore.scale * $contentProperties.scale;
-        return data;
-      });
+      // store.update((data) => {
+      //   data.contentScale = $imageAppStore.scale * $contentProperties.scale;
+      //   return data;
+      // });
     },
   };
 
@@ -61,47 +61,24 @@
       return;
     }
 
-    content.blocks.forEach((block) => {
+    content.blocks.forEach((block, index) => {
       if (block.id) {
+        block.order = index;
+        block.textStoreID = uniqueID
         user
           .get("windows")
           .get(mainAppStoreUniqueID)
           .get("imageAppData")
           .get("texts")
           .get(uniqueID)
-          .get("textStoreData")
+          .get('textStoreData')
           .get("blocks")
-          .get(block.id)
-          .put(block, (ack) => {
+          .get(block.order)
+          .put(flattenEditorJSData(block), (ack) => {
             if (ack.err) {
               console.error("Error saving block to GunDB:", ack.err);
             } else {
-              console.log(`Successfully saved block ${block.id} to GunDB:`, block);
-              if (block.data?.file?.url) {
-                console.log("Saving image block.");
-                // Here we should make sure that 'file' and its URL are properly saved
-                if (block.data.file.url) {
-                  user
-                    .get("windows")
-                    .get(mainAppStoreUniqueID)
-                    .get("imageAppData")
-                    .get("texts")
-                    .get(uniqueID)
-                    .get("textStoreData")
-                    .get("blocks")
-                    .get(block.id)
-                    .get("data")
-                    .get("url") // for some reason I cannot save in normal editorjs format which is data.file.url, instead i save it in data.url then it works.
-                    .put(block.data.file.url, (ack) => {
-                      if (ack.err) {
-                        console.error("Error saving file data:", ack.err);
-                      } else {
-                        console.log("Successfully saved file data.");
-                        console.log(block.data.file.url);
-                      }
-                    });
-                }
-              }
+              // console.log(`Successfully saved block ${block.id} to GunDB:`, block);
             }
           });
       } else {
@@ -109,89 +86,26 @@
       }
     });
   }
-
-  function updateIsCursorInsideEditor(event) {
-    const isCursorInsideEditor = event.detail;
-    $imageAppStore.isCursorInsideEditor = isCursorInsideEditor;
+  
+  function fin(event){
+    $textStore.isCursorInsideEditor = true;
   }
+  function fout(event){
+    $textStore.isCursorInsideEditor = false;
+  }
+
 
   onMount(async () => {
-    try {
-      const blocks = await fetchBlocks();
-      if (blocks) {
-        textStore.update((store) => ({
-          ...store,
-          blocks: blocks,
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching blocks:", error);
-    }
   });
 
-  async function fetchBlocks() {
-    const path = [
-      "windows",
-      mainAppStoreUniqueID,
-      "imageAppData",
-      "texts",
-      uniqueID,
-      "textStoreData",
-      "blocks",
-    ];
-    const data = await fetchData(path);
-    if (!data) throw new Error(`No data found for blocks`);
-
-    const blockPromises = Object.keys(data)
-      .filter((blockId) => blockId !== "_")
-      .map((blockId) => fetchBlockWithInnerData(blockId));
-
-    return Promise.all(blockPromises);
-  }
-
-  async function fetchBlockWithInnerData(blockId) {
-    const blockPath = [
-      "windows",
-      mainAppStoreUniqueID,
-      "imageAppData",
-      "texts",
-      uniqueID,
-      "textStoreData",
-      "blocks",
-      blockId,
-    ];
-    const block = await fetchData(blockPath);
-    if (!block) throw new Error(`No block found for blocks/${blockId}`);
-
-    const dataPath = [...blockPath, "data"];
-    block.data = await fetchData(dataPath);
-
-    return cleanGunData(block);
-  }
-
-  async function fetchData(path) {
-    return new Promise((resolve, reject) => {
-      user
-        .get(path[0])
-        .get(path[1])
-        .get(path[2])
-        .get(path[3])
-        .get(path[4])
-        .get(path[5])
-        .get(path[6])
-        .get(path[7])
-        .once((data) => {
-          resolve(cleanGunData(data || {}));
-        });
-    });
-  }
 </script>
 
 <DraggableResizable {uniqueID} store={textStore} {...imageAppItemDraggableFunctions}>
-  <div class="text-container">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_mouse_events_have_key_events -->
+  <div class="text-container" onmouseenter={fin} onmouseleave={fout}>
     <RichTextEditor
       {textStore}
-      on:isCursorInsideEditor={updateIsCursorInsideEditor}
       on:contentChanged={handleContentChanged}
     />
   </div>

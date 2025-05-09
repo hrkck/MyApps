@@ -84,7 +84,8 @@ export function debounce(func, wait, options) {
 export function throttle(fn, limit) {
   let lastFunc;
   let lastRan;
-  return function (...args) {
+
+  function throttled(...args) {
     const context = this;
     if (!lastRan) {
       fn.apply(context, args);
@@ -98,8 +99,16 @@ export function throttle(fn, limit) {
         }
       }, limit - (Date.now() - lastRan));
     }
+  }
+
+  throttled.cancel = () => {
+    clearTimeout(lastFunc);
+    lastFunc = null;
   };
+
+  return throttled;
 }
+
 
 
 // used in addWindowGroup
@@ -303,4 +312,84 @@ export function cleanGunData(obj) {
     return cleanedObj;
   }
   return obj;
+}
+
+
+export function flattenEditorJSData(block) {
+  let flattenedData = {};
+
+  // Preserve the timestamp
+  // const timestamp = editorData.time;
+
+  // Iterate through each block and flatten accordingly
+  if (block.type === 'paragraph') {
+    // For text blocks, create an object with a 'text' attribute
+    flattenedData = { id: block.id, text: block.data.text, textStoreID: block.textStoreID, order: block.order };
+  } else if (block.type === 'image') {
+    // For image blocks, create an object with a 'imageUrl' attribute
+    flattenedData = { id: block.id, imageUrl: block.data.file.url, caption: block.data.caption, textStoreID: block.textStoreID, order: block.order };
+  }
+
+  return flattenedData
+  // return { timestamp, flattenedData };
+}
+
+
+export function unflattenToEditorJSData(flattened) {
+  const blocks = [];
+
+  flattened.forEach(item => {
+    if (item.text) {
+      // If it's a text object, create a paragraph block
+      blocks.push({
+        id: item.id,
+        type: 'paragraph',
+        data: {
+          text: item.text
+        },
+        textStoreID: item.textStoreID,
+        order: item.order
+      });
+    } else if (item.imageUrl) {
+      // If it's an image object, create an image block
+      blocks.push({
+        id: item.id,
+        type: 'image',
+        data: {
+          file: {
+            url: item.imageUrl
+          },
+          caption: item.caption || ''  // Handle empty caption if needed
+        },
+        textStoreID: item.textStoreID,
+        order: item.order
+      });
+    }
+  });
+
+  return blocks;
+}
+
+// Utility function to convert the list of blocks to an object
+export function listToObject(blocks) {
+  const objectBlocks = {};
+
+  blocks.forEach((block, index) => {
+    // Flatten the block before adding it to the object
+    objectBlocks[index] = flattenEditorJSData(block);
+  });
+
+  return objectBlocks;
+}
+
+// Utility function to convert the object back to a list of blocks
+export function objectToList(objectBlocks) {
+  const blocks = [];
+
+  Object.values(objectBlocks).forEach((flattenedBlock) => {
+    // Unflatten the block and add to the list
+    blocks.push(...unflattenToEditorJSData([flattenedBlock]));
+  });
+
+  return blocks;
 }
