@@ -84,15 +84,14 @@
   });
 
   async function initializeAppData() {
-    // Save initial x,y and scale to gundb first. That is not done, so it is breaking the data integrity
+    // Fetch and initialize data from GunDB
+    // Save initial x,y and scale to gundb first.
     user
       .get("windows")
       .get(uniqueID)
       .get("workspaceData")
       .once((data) => {
         if (data) {
-          console.log("first image app data: ", data);
-          console.log("data scale: ", data.scale);
           $imageAppStore.x = data.x;
           $imageAppStore.y = data.y;
           $imageAppStore.scale = data.scale;
@@ -100,7 +99,6 @@
         }
       });
 
-    // Fetch and initialize data from GunDB
     // Initialize images from GunDB
     user
       .get("windows")
@@ -175,28 +173,6 @@
           }
         }
       });
-
-    // console.log(textStoresData);
-    // console.log(blocks);
-
-    // blocks = unflattenToEditorJSData(blocks);
-    // for (const block of blocks) {
-    //   const store = textStoresData.find((ts) => ts.uniqueID === block.textStoreID);
-    //   if (store) {
-    //     store.blocks.push(block);
-    //   }
-    // }
-
-    // Sort the blocks by their order value
-    // textStoresData.forEach((storeData) => {
-    //   storeData.blocks.sort((a, b) => a.order - b.order);
-    //   const textStore = writable(storeData);
-    //   const key = storeData.uniqueID;
-
-    //   texts = [...texts, { key, textStore }];
-    // });
-
-    console.log(texts);
   }
 
   const draggableFunctions = {
@@ -210,7 +186,7 @@
       user.get("windows").get(uniqueID).get("workspaceData").put({ x: x, y: y });
     },
     scaleFunc: function (store, event, x, y, scale) {
-      if ($imageAppStore.isCursorInsideEditor) return;
+      if (texts.some((text) => get(text.textStore).isCursorInsideEditor)) return;
       if (scale == undefined) scale = 1;
 
       store.update((store) => {
@@ -253,23 +229,6 @@
     imageAppBackgroundY: 0,
     imageAppBackgroundScale: 1,
   };
-
-  // Assuming `x` and `y` are the mouse event's clientX and clientY
-  // function calculateImagePosition(x, y) {
-  //   // Step 1: Get the bounding rectangle of the green area (image app)
-  //   const rect = draggableAreaElement.getBoundingClientRect();
-  //   const coordinates = { x: rect.left + window.scrollX, y: rect.top + window.scrollY };
-
-  //   // Step 2: Adjust for the main content's scaling and translation
-  //   const mainContentX = (x - coordinates.x - $contentProperties.x) / $contentProperties.scale;
-  //   const mainContentY = (y - coordinates.y - $contentProperties.y) / $contentProperties.scale;
-
-  //   // Step 3: Adjust for the image app's scaling and translation within the main content
-  //   const imageAppX = (mainContentX - $imageAppStore.x) / $imageAppStore.scale;
-  //   const imageAppY = (mainContentY - $imageAppStore.y) / $imageAppStore.scale;
-
-  //   return { x: imageAppX, y: imageAppY };
-  // }
 
   // Function to handle pasted or dropped images
   function handleImageData(imageUrl, x, y) {
@@ -374,6 +333,7 @@
     shouldHandlePaste = false;
   }
 
+  // Add listener in capture phase to beat Editor.js
   pasteListener = (event) => {
     if (!shouldHandlePaste) return;
     // Don't interfere if any Editor has focus
@@ -382,18 +342,15 @@
     }
 
     event.preventDefault();
-    event.stopImmediatePropagation(); // <--- this is critical
+    event.stopImmediatePropagation(); 
 
     const items = event.clipboardData.items;
     handlePaste(items);
 
-    // Add listener in capture phase to beat Editor.js
   };
 
   // Function to handle paste event (supporting both images and text)
   function handlePaste(items) {
-    // GET MOUSE X AND Y data from event
-    // Initialize items at these locations
     for (let index = 0; index < items.length; index++) {
       const item = items[index];
       if (item.kind === "file" && item.type.includes("image")) {
