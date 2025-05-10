@@ -105,31 +105,59 @@
       .get(uniqueID)
       .get("imageAppData")
       .get("images")
-      .map()
-      .once(async (data, key) => {
-        if (data && data.imageUrl && data.imageUrl != "d") {
-          try {
-            const node = user
+      .once(async (listOfImageKeys) => {
+        if (!listOfImageKeys || typeof listOfImageKeys !== "object") return;
+        const keys = Object.keys(listOfImageKeys).filter(
+          (k) => k && !k.startsWith("_"), // ignore metadata keys
+        );
+
+        for (const key of keys) {
+          // Step 2: Load image metadata
+          const imageMeta = await new Promise((resolve) => {
+            user
               .get("windows")
               .get(uniqueID)
               .get("imageAppData")
               .get("images")
               .get(key)
-              .get("imageStoreData")
-              .once((storeData) => {
-                const existing = images.find((t) => t.key === storeData.uniqueID);
-                if (existing) {
-                  existing.imageStore.set(storeData); // update existing
-                } else {
-                  const imageStore = writable({ ...storeData });
-                  images = [
-                    ...images,
-                    { imageUrl: data.imageUrl, key: storeData.uniqueID, imageStore },
-                  ];
-                }
-              });
+              .once(resolve);
+          });
+
+          if (!imageMeta || imageMeta.imageUrl === "d") continue;
+          // Step 3: Load imageStoreData
+          try {
+            const storeData = await new Promise((resolve, reject) => {
+              user
+                .get("windows")
+                .get(uniqueID)
+                .get("imageAppData")
+                .get("images")
+                .get(key)
+                .get("imageStoreData")
+                .once((data) => {
+                  if (data) resolve(cleanGunData(data));
+                  else reject(new Error(`No imageStoreData for key: ${key}`));
+                });
+            });
+
+            const existing = images.find((t) => t.key === storeData.uniqueID);
+            if (existing) {
+              existing.imageStore.set(storeData); // Update
+              existing.imageUrl = imageMeta.imageUrl;
+            } else {
+              const imageStore = writable({ ...storeData });
+
+              images = [
+                ...images,
+                {
+                  imageUrl: imageMeta.imageUrl,
+                  key: storeData.uniqueID,
+                  imageStore,
+                },
+              ];
+            }
           } catch (error) {
-            console.error(error);
+            console.error(`Error loading storeData for ${key}:`, error);
           }
         }
       });
@@ -342,11 +370,10 @@
     }
 
     event.preventDefault();
-    event.stopImmediatePropagation(); 
+    event.stopImmediatePropagation();
 
     const items = event.clipboardData.items;
     handlePaste(items);
-
   };
 
   // Function to handle paste event (supporting both images and text)

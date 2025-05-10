@@ -1,6 +1,6 @@
 // storage.js
-import { writable } from "svelte/store";
-import { user } from "./initGun";
+import { readable, writable } from "svelte/store";
+import { gun, user } from "./initGun";
 
 export let contextMenu = writable({
   visible: false,
