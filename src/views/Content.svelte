@@ -7,6 +7,9 @@
   import DraggableResizable from "./DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { contentProperties, contextMenu } from "../scripts/storage";
   import { deactivateWindow, getAppIDsInAFrame, getContainingRectangle } from "../scripts/utils";
+    import ZoomIndicator from "./Utility/ZoomIndicator.svelte";
+
+  let zoomIndicatorRef;
 
   const draggableFunctions = {
     dragStartFunc: function (store, event, x, y) {
@@ -31,6 +34,13 @@
         if (store.scale == undefined) {
           store.scale = 1;
         }
+
+        // Compute visible size
+        const visibleWidth = window.innerWidth / store.scale;
+        const visibleHeight = window.innerHeight / store.scale;
+
+        // Show zoom indicator
+        zoomIndicatorRef?.show(visibleWidth, visibleHeight);
         return store;
       });
     },
@@ -54,7 +64,6 @@
   function resetWorkspacePosition() {
     let appIDs = getAppIDsInAFrame("mainContent");
     const rect = getContainingRectangle(appIDs, 50); // Assuming padding is 50
-    console.log(rect);
 
     if (rect.left === Infinity || rect.top === Infinity) {
       $contentProperties.scale = 1;
@@ -102,6 +111,8 @@
 </script>
 
 <svelte:window onkeydown={handleKeyPress} onclick={draggableFunctions.clickFunc} />
+
+<ZoomIndicator bind:this={zoomIndicatorRef} mainContent={true} />
 
 <DraggableResizable
   uniqueID={$contentProperties.uniqueID}

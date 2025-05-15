@@ -3,7 +3,7 @@
   import { contentProperties } from "../../scripts/storage";
   import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
 
-  let { imageUrl, uniqueID, imageStore, imageAppStore } = $props();
+  let { imageUrl, uniqueID, imageStore, imageAppStore, imageAppContainer } = $props();
   let imageAppUniqueID = $imageAppStore.mainAppStoreID;
 
   const imageAppItemDraggableFunctions = {
@@ -49,7 +49,7 @@
   };
 </script>
 
-<DraggableResizable {uniqueID} store={imageStore} {...imageAppItemDraggableFunctions}>
+<DraggableResizable {uniqueID} store={imageStore} mainAppStore={imageAppStore} {...imageAppItemDraggableFunctions} mainAppContainer={imageAppContainer}>
   <img
     class="image-resize"
     src={imageUrl}

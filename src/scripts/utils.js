@@ -194,6 +194,59 @@ export function getContainingRectangle(appIDs, padding = 50) {
   };
 }
 
+export function getContainingRectangleOfImages(imagePositions, padding = 50) {
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+  for (const pos of imagePositions) {
+    minX = Math.min(minX, pos.x);
+    minY = Math.min(minY, pos.y);
+    maxX = Math.max(maxX, pos.x + pos.width);
+    maxY = Math.max(maxY, pos.y + pos.height);
+  }
+  return {
+    left: minX - padding,
+    top: minY - padding,
+    right: maxX + padding,
+    bottom: maxY + padding,
+  };
+}
+
+// This function does not work as intended, although it is kinda useful
+// I think it is not taking into account the current zoom from contentProperties.
+export function containViewToImages(imagePositions, store) {
+  console.log(imagePositions);
+  console.log(store);
+  const rect = getContainingRectangleOfImages(imagePositions, 50); // Assuming padding is 50
+
+  if (rect.left === Infinity || rect.top === Infinity) {
+    store.scale = 1;
+    store.x = window.innerWidth / 2;
+    store.y = window.innerHeight / 2;
+    return;
+  }
+
+  rect.width = rect.right - rect.left;
+  rect.height = rect.bottom - rect.top;
+
+  // Calculate the scale factor to fit the entire rectangle in the view
+  const scaleX = window.innerWidth / rect.width;
+  const scaleY = window.innerHeight / rect.height;
+  const scale = Math.min(scaleX, scaleY);
+
+  // Calculate the center of the containing rectangle
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  // Calculate the new content position to center the view on the containing rectangle
+  store.scale = scale;
+  store.x = window.innerWidth / 2 - centerX * scale;
+  store.y = window.innerHeight / 2 - centerY * scale;
+
+  // Deactivate any active window
+}
+
 // Dynamic updating of Boundaries
 // this function updates x,y,width,height of
 // any html container binded to a svelte store
@@ -274,6 +327,23 @@ export function checkContainerBoundaries(parentID) {
     });
   }
 }
+
+export function getTooltipScreenPosition(event, store, containerEl, parentStore = null) {
+  if (!containerEl) {
+    return { x: (event.clientX - get(contentProperties).x) / get(contentProperties).scale, y: (event.clientY - get(contentProperties).y) / get(contentProperties).scale }
+  }
+  const rect = containerEl.getBoundingClientRect();
+  const originX = ((event.clientX - rect.left - window.scrollX) / get(contentProperties).scale - parentStore.x) /
+    parentStore.scale;
+
+  const originY = ((event.clientY - rect.top - window.scrollY) / get(contentProperties).scale - parentStore.y) /
+    parentStore.scale;
+
+  return { x: originX, y: originY };
+}
+
+
+
 
 export function activateWindow(windowID) {
   if (windowID == "") return;

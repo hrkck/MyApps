@@ -3,6 +3,7 @@
   import { contentProperties, windowStores } from "../../scripts/storage";
   import {
     cleanGunData,
+    containViewToImages,
     generateRandomString,
     getImageDimensions,
     listToObject,
@@ -16,6 +17,7 @@
   import { onDestroy, onMount } from "svelte";
   import Text from "../Elements/Text.svelte";
   import DraggableImage from "../Elements/DraggableImage.svelte";
+    import ZoomIndicator from "../Utility/ZoomIndicator.svelte";
 
   /**
    * @typedef {Object} Props
@@ -26,6 +28,8 @@
   /** @type {Props} */
   let { uniqueID, draggableAreaElement = $bindable() } = $props();
   const mainAppStore = windowStores[uniqueID];
+
+  let zoomIndicatorRef;
 
   let images = $state([]);
   let texts = $state([]);
@@ -241,6 +245,17 @@
             (store.y - y / store.contentScale) * (scale / store.scale) + y / store.contentScale;
           store.scale = scale;
         }
+
+        // Compute visible size
+
+        const containerRect = draggableAreaElement.getBoundingClientRect();
+        const totalScale = $contentProperties.scale * store.scale;  // combine scales
+
+        const visibleWidth = containerRect.width / totalScale;
+        const visibleHeight = containerRect.height / totalScale;
+
+        // Show zoom indicator
+        zoomIndicatorRef?.show(visibleWidth, visibleHeight);
         return store;
       });
 
@@ -422,6 +437,7 @@
     let offsetY = 0;
     let rowHeight = 0;
 
+    let imgPositions = [];
     for (const img of images) {
       if (offsetX + img.width > MAX_ROW_WIDTH) {
         offsetX = 0;
@@ -433,10 +449,12 @@
       const finalY = originY + offsetY;
 
       handleImageData(img.dataUrl, finalX, finalY);
+      imgPositions.push({x: finalX, y: finalY, width: img.width, height: img.height});
 
       offsetX += img.width + IMAGE_GAP;
       rowHeight = Math.max(rowHeight, img.height);
     }
+    containViewToImages(imgPositions, $imageAppStore);
   }
 
   // Function to handle drop event
@@ -518,6 +536,8 @@
   }
 </script>
 
+<ZoomIndicator bind:this={zoomIndicatorRef} />
+
 <!-- main div should listen to -->
 <!-- paste event (ctrl+v) when mouse is over it and when the active window id equals uniqueid -->
 <!--  -->
@@ -549,20 +569,20 @@
       store={imageAppStore}
       {...draggableFunctions}
     >
-      {#if loading}
+      <!-- {#if loading} -->
         <!-- content here -->
-         <h1>LOADING</h1>
-      {:else}
+         <!-- <h1>LOADING</h1> -->
+      <!-- {:else} -->
         <!-- image handling -->
         {#each images as { imageUrl, key, imageStore } (key)}
-          <DraggableImage {imageUrl} uniqueID={key} {imageStore} {imageAppStore} />
+          <DraggableImage {imageUrl} uniqueID={key} {imageStore} {imageAppStore} imageAppContainer={draggableAreaElement} />
         {/each}
 
         <!-- Text handling -->
         {#each texts as { key, textStore } (key)}
           <Text uniqueID={key} {textStore} {imageAppStore} />
         {/each}
-      {/if}
+      <!-- {/if} -->
     </DraggableResizable>
     <Background store={imageAppStore} />
   </div>

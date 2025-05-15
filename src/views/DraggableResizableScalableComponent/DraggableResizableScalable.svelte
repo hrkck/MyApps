@@ -1,12 +1,12 @@
 <!--  DraggabkeResizable.svelte -->
 <script>
-  import { stopPropagation } from 'svelte/legacy';
+  import { stopPropagation } from "svelte/legacy";
 
   import { user } from "../../scripts/initGun";
   import { contentProperties, contextMenu, windowStores } from "../../scripts/storage";
-  import { throttle } from "../../scripts/utils";
-    import { scale } from 'svelte/transition';
-
+  import { getTooltipScreenPosition, throttle } from "../../scripts/utils";
+  import { scale } from "svelte/transition";
+  import ResizeIndicator from "../Utility/ResizeIndicator.svelte";
 
   /**
    * @typedef {Object} Props
@@ -21,6 +21,8 @@
    * @property {any} [dbclickFunc]
    * @property {string} [uniqueID]
    * @property {any} store
+   * @property {any} [mainAppStore]
+   * @property {any} [mainAppContainer]
    * @property {import('svelte').Snippet} [children]
    */
 
@@ -37,8 +39,12 @@
     dbclickFunc = function (store, event) {},
     uniqueID = "no-unique-id",
     store,
-    children
+    mainAppStore = undefined,
+    mainAppContainer = undefined,
+    children,
   } = $props();
+
+  let resizeIndicatorRef;
 
   // Draggable
   let isDragging = false;
@@ -145,8 +151,8 @@
   let resizing = false;
   let grabber = false;
   let aspectRatio = $store.width / $store.height;
-  let grabberSize = $derived(5 / $contentProperties.scale); // Base size is 10px
-
+  let grabberSize = $state(10);
+  
   if ($store.showGrabbers) {
     grabber = true;
   }
@@ -231,6 +237,9 @@
         $store.height = Math.max(initialRect.height + delta, minHeight);
       }
 
+      const pos = getTooltipScreenPosition(event, store, mainAppContainer, $mainAppStore);
+      resizeIndicatorRef?.show($store.width, $store.height, pos.x, pos.y);
+
       resizeMoveFunc(store, event, $store.x, $store.y, $store.width, $store.height);
     }, 16);
 
@@ -267,6 +276,7 @@
       initialRect = null;
       initialPos = null;
 
+      resizeIndicatorRef?.hide();
       resizeEndFunc(store, event, $store.x, $store.y, $store.width, $store.height);
     }
 
@@ -304,7 +314,7 @@
       const mouseX = initialDistance != 0 ? 1 : event.clientX - rect.left;
       const mouseY = initialDistance != 0 ? 1 : event.clientY - rect.top;
       let newScale = $store.scale * zoom;
-      
+
       // apply the scale in callback
       scaleFunc(store, event, mouseX, mouseY, newScale);
     }
@@ -314,8 +324,8 @@
       event.preventDefault();
       const wheel = event.deltaY < 0 ? 1 : -1;
       const zoom = Math.exp(wheel * scaleStep);
-      
-      if($store.scale == undefined) $store.scale = 1;
+
+      if ($store.scale == undefined) $store.scale = 1;
       changeScale(event, zoom);
     }
     function onTouchStart(event) {
@@ -484,6 +494,8 @@
   }
 </script>
 
+<ResizeIndicator bind:this={resizeIndicatorRef} />
+
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
@@ -491,7 +503,7 @@
   class="draggable resizable"
   class:box-shadow={$store.boxShadow}
   style="
-  --grabber-size: {grabberSize}px;
+  --grabber-size: {(10 / $contentProperties.scale) / ($mainAppStore === undefined ? 1 : $mainAppStore?.scale)}px;
   transform: scale({$store.scale}); 
   left: {$store.x}px; 
   top: {$store.y}px; 
