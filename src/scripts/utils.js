@@ -144,6 +144,32 @@ export function getAppIDsInAFrame(frameID) {
   }
 }
 
+
+
+// Util: Read image as Data URL
+export function readImageAsDataURL(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+// Util: Get image dimensions from Data URL
+export function getImageDimensions(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        dataUrl,
+      });
+    };
+    img.src = dataUrl;
+  });
+}
+
 export function getContainingRectangle(appIDs, padding = 50) {
   let minX = Infinity,
     minY = Infinity,

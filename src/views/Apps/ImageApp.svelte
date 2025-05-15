@@ -4,8 +4,10 @@
   import {
     cleanGunData,
     generateRandomString,
+    getImageDimensions,
     listToObject,
     nowStr,
+    readImageAsDataURL,
     unflattenToEditorJSData,
   } from "../../scripts/utils";
   import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
@@ -29,6 +31,12 @@
   let texts = $state([]);
   let pasteListener;
   let shouldHandlePaste = false;
+
+  let loading = $state(true);
+
+  // Constants
+  const MAX_ROW_WIDTH = 12000;
+  const IMAGE_GAP = 100;
 
   // bind with gundb init
   const imageAppStore = writable({
@@ -75,7 +83,8 @@
 
   onMount(async () => {
     await initializeAppData();
-
+    loading = false;
+    console.log("finished loading images for , ", uniqueID);
     document.addEventListener("paste", pasteListener, true);
   });
 
@@ -100,67 +109,73 @@
       });
 
     // Initialize images from GunDB
-    user
-      .get("windows")
-      .get(uniqueID)
-      .get("imageAppData")
-      .get("images")
-      .once(async (listOfImageKeys) => {
-        if (!listOfImageKeys || typeof listOfImageKeys !== "object") return;
-        const keys = Object.keys(listOfImageKeys).filter(
-          (k) => k && !k.startsWith("_"), // ignore metadata keys
-        );
+    await new Promise((resolve) => {
+      user
+        .get("windows")
+        .get(uniqueID)
+        .get("imageAppData")
+        .get("images")
+        .once(async (listOfImageKeys) => {
+          if (!listOfImageKeys || typeof listOfImageKeys !== "object") {
+            resolve();
+            return;
+          }
+          const keys = Object.keys(listOfImageKeys).filter(
+            (k) => k && !k.startsWith("_"), // ignore metadata keys
+          );
 
-        for (const key of keys) {
-          // Step 2: Load image metadata
-          const imageMeta = await new Promise((resolve) => {
-            user
-              .get("windows")
-              .get(uniqueID)
-              .get("imageAppData")
-              .get("images")
-              .get(key)
-              .once(resolve);
-          });
-
-          if (!imageMeta || imageMeta.imageUrl === "d") continue;
-          // Step 3: Load imageStoreData
-          try {
-            const storeData = await new Promise((resolve, reject) => {
+          for (const key of keys) {
+            // Step 2: Load image metadata
+            const imageMeta = await new Promise((resolve) => {
               user
                 .get("windows")
                 .get(uniqueID)
                 .get("imageAppData")
                 .get("images")
                 .get(key)
-                .get("imageStoreData")
-                .once((data) => {
-                  if (data) resolve(cleanGunData(data));
-                  else reject(new Error(`No imageStoreData for key: ${key}`));
-                });
+                .once(resolve);
             });
 
-            const existing = images.find((t) => t.key === storeData.uniqueID);
-            if (existing) {
-              existing.imageStore.set(storeData); // Update
-              existing.imageUrl = imageMeta.imageUrl;
-            } else {
-              const imageStore = writable({ ...storeData });
+            if (!imageMeta || imageMeta.imageUrl === "d") continue;
+            // Step 3: Load imageStoreData
+            try {
+              const storeData = await new Promise((resolve, reject) => {
+                user
+                  .get("windows")
+                  .get(uniqueID)
+                  .get("imageAppData")
+                  .get("images")
+                  .get(key)
+                  .get("imageStoreData")
+                  .once((data) => {
+                    if (data) resolve(cleanGunData(data));
+                    else reject(new Error(`No imageStoreData for key: ${key}`));
+                  });
+              });
 
-              images = [
-                ...images,
-                {
-                  imageUrl: imageMeta.imageUrl,
-                  key: storeData.uniqueID,
-                  imageStore,
-                },
-              ];
+              const existing = images.find((t) => t.key === storeData.uniqueID);
+              if (existing) {
+                existing.imageStore.set(storeData); // Update
+                existing.imageUrl = imageMeta.imageUrl;
+              } else {
+                const imageStore = writable({ ...storeData });
+
+                images = [
+                  ...images,
+                  {
+                    imageUrl: imageMeta.imageUrl,
+                    key: storeData.uniqueID,
+                    imageStore,
+                  },
+                ];
+              }
+            } catch (error) {
+              console.error(`Error loading storeData for ${key}:`, error);
             }
-          } catch (error) {
-            console.error(`Error loading storeData for ${key}:`, error);
           }
-        }
-      });
+          resolve();
+        });
+    });
 
     // Initialize texts from GunDB
     let textStoresData = [];
@@ -264,12 +279,6 @@
     imageObj.onload = async function () {
       const key = `ref-img-${nowStr()}`;
 
-      let coordinates = { x: 0, y: 0 };
-      const rect = draggableAreaElement.getBoundingClientRect();
-      coordinates = { x: rect.left + window.scrollX, y: rect.top + window.scrollY };
-
-      // const { x: imageX, y: imageY } = calculateImagePosition(x, y);
-
       const imageStore = writable({
         uniqueID: key,
         boxShadow: false,
@@ -277,18 +286,13 @@
         width: this.naturalWidth,
         height: this.naturalHeight,
         ...itemProperties,
-        x:
-          ((x - coordinates.x) / $contentProperties.scale - $imageAppStore.x) /
-          $imageAppStore.scale,
-        y:
-          ((y - coordinates.y) / $contentProperties.scale - $imageAppStore.y) /
-          $imageAppStore.scale,
+        x,
+        y,
       });
 
       images = [...images, { imageUrl, key, imageStore }];
 
-      // Save image data to GunDB
-      let imageStoreData = get(imageStore);
+      const imageStoreData = get(imageStore);
       user
         .get("windows")
         .get(uniqueID)
@@ -301,7 +305,7 @@
   }
 
   // Function to handle pasted text
-  function handleTextPaste(text, x, y) {
+  function handleTextData(text, x, y) {
     const key = `ref-text-${nowStr()}`;
     if (texts.some((t) => t.key === key)) return;
 
@@ -351,6 +355,136 @@
     texts = [...texts, { key, textStore }];
   }
 
+  async function extractImagesAndTextFromItems(items) {
+    const imagePromises = [];
+    let pendingPlainText = null;
+
+    for (const item of items) {
+      if (item.kind === "file" && item.type.includes("image")) {
+        const file = item.getAsFile();
+        imagePromises.push(
+          readImageAsDataURL(file).then((dataUrl) =>
+            getImageDimensions(dataUrl).then((dims) => ({
+              dataUrl,
+              width: dims.width,
+              height: dims.height,
+            })),
+          ),
+        );
+      } else if (
+        item.kind === "string" &&
+        (item.type === "text/plain" || item.type === "text/html")
+      ) {
+        const textOrHtmlPromise = new Promise((resolve) => {
+          item.getAsString((str) => {
+            if (item.type === "text/plain") {
+              pendingPlainText = str;
+              resolve(null);
+            } else if (item.type === "text/html") {
+              // Extract base64 image if present
+              const base64Regex = /src="(data:image\/[^;]+;base64,[^"]*)"/;
+              const match = str.match(base64Regex);
+              if (match) {
+                getImageDimensions(match[1]).then((dims) =>
+                  resolve({ dataUrl: match[1], width: dims.width, height: dims.height }),
+                );
+              } else resolve(null);
+            }
+          });
+        });
+        imagePromises.push(textOrHtmlPromise);
+      }
+    }
+
+    const results = await Promise.all(imagePromises);
+    const images = results.filter((r) => r && r.dataUrl);
+    return { images, pendingPlainText };
+  }
+
+  async function handleMultipleImages(imageDataUrls, mouseX, mouseY) {
+    const images = await Promise.all(imageDataUrls.map(getImageDimensions));
+
+    // Sort by width descending
+    images.sort((a, b) => b.width - a.width);
+
+    // Get transformed base position in workspace coordinates
+    const rect = draggableAreaElement.getBoundingClientRect();
+    const originX =
+      ((mouseX - rect.left - window.scrollX) / $contentProperties.scale - $imageAppStore.x) /
+      $imageAppStore.scale;
+
+    const originY =
+      ((mouseY - rect.top - window.scrollY) / $contentProperties.scale - $imageAppStore.y) /
+      $imageAppStore.scale;
+
+    // Layout loop
+    let offsetX = 0;
+    let offsetY = 0;
+    let rowHeight = 0;
+
+    for (const img of images) {
+      if (offsetX + img.width > MAX_ROW_WIDTH) {
+        offsetX = 0;
+        offsetY += rowHeight + IMAGE_GAP;
+        rowHeight = 0;
+      }
+
+      const finalX = originX + offsetX;
+      const finalY = originY + offsetY;
+
+      handleImageData(img.dataUrl, finalX, finalY);
+
+      offsetX += img.width + IMAGE_GAP;
+      rowHeight = Math.max(rowHeight, img.height);
+    }
+  }
+
+  // Function to handle drop event
+  async function handleDrop(event) {
+    event.preventDefault();
+    const mouseX = $contentProperties.mouseX;
+    const mouseY = $contentProperties.mouseY;
+    const items = event.dataTransfer.items;
+    const { images, pendingPlainText } = await extractImagesAndTextFromItems(items);
+
+    if (images.length) {
+      handleMultipleImages(
+        images.map((img) => img.dataUrl),
+        mouseX,
+        mouseY,
+      );
+    }
+    if (pendingPlainText) {
+      handleTextData(pendingPlainText, mouseX, mouseY);
+    }
+  }
+
+  // Function to clear all images and texts
+  function clearImages(event) {
+    user.get("windows").get(uniqueID).get("imageAppData").get("images").map().put(null);
+    user.get("windows").get(uniqueID).get("imageAppData").get("texts").map().put(null);
+    images = [];
+    texts = [];
+  }
+
+  // Function to handle paste event (supporting both images and text)
+  async function handlePaste(items) {
+    const mouseX = $contentProperties.mouseX;
+    const mouseY = $contentProperties.mouseY;
+    const { images, pendingPlainText } = await extractImagesAndTextFromItems(items);
+
+    if (images.length) {
+      handleMultipleImages(
+        images.map((img) => img.dataUrl),
+        mouseX,
+        mouseY,
+      );
+    }
+    if (pendingPlainText) {
+      handleTextData(pendingPlainText, mouseX, mouseY);
+    }
+  }
+
   //  on mouseenter
   function enablePasteHandler() {
     shouldHandlePaste = true;
@@ -375,68 +509,6 @@
     const items = event.clipboardData.items;
     handlePaste(items);
   };
-
-  // Function to handle paste event (supporting both images and text)
-  function handlePaste(items) {
-    for (let index = 0; index < items.length; index++) {
-      const item = items[index];
-      if (item.kind === "file" && item.type.includes("image")) {
-        const blob = item.getAsFile();
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          handleImageData(e.target.result, $contentProperties.mouseX, $contentProperties.mouseY);
-        };
-        reader.readAsDataURL(blob);
-      } else if (item.kind === "string" && item.type === "text/plain") {
-        item.getAsString((text) =>
-          handleTextPaste(text, $contentProperties.mouseX, $contentProperties.mouseY),
-        );
-      }
-    }
-  }
-
-  // Function to handle drop event
-  function handleDrop(event) {
-    event.preventDefault();
-    // GET MOUSE X AND Y data from event
-    // Initialize items at these locations
-
-    // Check if files are being dropped
-    if (event.dataTransfer.files.length > 0) {
-      // Handle dropped files (images from file system)
-      const file = event.dataTransfer.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target.result;
-        handleImageData(imageUrl, $contentProperties.mouseX, $contentProperties.mouseY); // Pass the image data to the existing function for handling pasted images
-      };
-      reader.readAsDataURL(file);
-    } else {
-      // Handle dropped image URL or text
-      const htmlData = event.dataTransfer.getData("text/html"); // Get the dropped image URL
-      const plainText = event.dataTransfer.getData("text/plain"); // Get the dropped plain text
-      const base64Regex = /src="data:image\/jpeg;base64,([^"]*)"/;
-      const match = htmlData.match(base64Regex);
-
-      if (match) {
-        // Extract the Base64 encoded image data
-        const base64Data = "data:image/jpeg;base64," + match[1];
-        handleImageData(base64Data, $contentProperties.mouseX, $contentProperties.mouseY); // Pass the URL to the existing function for handling pasted images
-      } else if (plainText) {
-        handleTextPaste(plainText, $contentProperties.mouseX, $contentProperties.mouseY); // Handle dropped text
-      } else {
-        console.log("No image or text data found in the drop event");
-      }
-    }
-  }
-
-  // Function to clear all images and texts
-  function clearImages(event) {
-    user.get("windows").get(uniqueID).get("imageAppData").get("images").map().put(null);
-    user.get("windows").get(uniqueID).get("imageAppData").get("texts").map().put(null);
-    images = [];
-    texts = [];
-  }
 
   function fin() {
     // console.log("mouse over green area");
@@ -477,15 +549,20 @@
       store={imageAppStore}
       {...draggableFunctions}
     >
-      <!-- image handling -->
-      {#each images as { imageUrl, key, imageStore } (key)}
-        <DraggableImage {imageUrl} uniqueID={key} {imageStore} {imageAppStore} />
-      {/each}
+      {#if loading}
+        <!-- content here -->
+         <h1>LOADING</h1>
+      {:else}
+        <!-- image handling -->
+        {#each images as { imageUrl, key, imageStore } (key)}
+          <DraggableImage {imageUrl} uniqueID={key} {imageStore} {imageAppStore} />
+        {/each}
 
-      <!-- Text handling -->
-      {#each texts as { key, textStore } (key)}
-        <Text uniqueID={key} {textStore} {imageAppStore} />
-      {/each}
+        <!-- Text handling -->
+        {#each texts as { key, textStore } (key)}
+          <Text uniqueID={key} {textStore} {imageAppStore} />
+        {/each}
+      {/if}
     </DraggableResizable>
     <Background store={imageAppStore} />
   </div>
