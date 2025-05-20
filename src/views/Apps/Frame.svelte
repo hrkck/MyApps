@@ -9,7 +9,7 @@
   import {  beforeUpdate, onMount } from "svelte";
 
   export let uniqueID;
-  const store = windowStores[uniqueID];
+  const store = $windowStores[uniqueID];
   $store.contentScale = $contentProperties.scale;
 
   const draggableFunctions = {
@@ -23,7 +23,7 @@
       let appIDs = getAppIDsInAFrame(uniqueID);
       let appStore;
       for (const appID of appIDs) {
-        appStore = windowStores[appID];
+        appStore = $windowStores[appID];
         appStore.update((appData) => {
           appData.x += x;
           appData.y += y;
@@ -36,7 +36,7 @@
       let appIDs = getAppIDsInAFrame(uniqueID);
       let appStore, appX, appY;
       for (const appID of appIDs) {
-        appStore = windowStores[appID];
+        appStore = $windowStores[appID];
         appX = get(appStore).x;
         appY = get(appStore).y;
         user.get("windows").get(appID).put({ x: appX, y: appY });
@@ -55,7 +55,7 @@
   };
 
   beforeUpdate(() => {
-    windowStores[uniqueID] = store;
+   $windowStores[uniqueID] = store;
   });
   onMount(() => {
     // user.get("windows").get(uniqueID).get('x').on(data=>{

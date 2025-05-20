@@ -1,13 +1,13 @@
 <!-- Content.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { initUser, user } from "../scripts/initGun";
+  import { initGunDB, initUser, user } from "../scripts/initGun";
   import AppWindow from "./Apps/AppWindow.svelte";
   import Frame from "./Apps/Frame.svelte";
   import DraggableResizable from "./DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
-  import { contentProperties, contextMenu } from "../scripts/storage";
+  import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
   import { deactivateWindow, getAppIDsInAFrame, getContainingRectangle } from "../scripts/utils";
-    import ZoomIndicator from "./Utility/ZoomIndicator.svelte";
+  import ZoomIndicator from "./Utility/ZoomIndicator.svelte";
 
   let zoomIndicatorRef;
 
@@ -59,8 +59,6 @@
   };
 
   // Reset Workspace Position
-  // Reset Workspace Position
-  // Reset Workspace Position
   function resetWorkspacePosition() {
     let appIDs = getAppIDsInAFrame("mainContent");
     const rect = getContainingRectangle(appIDs, 50); // Assuming padding is 50
@@ -105,9 +103,12 @@
     return id.startsWith("frame-");
   }
 
-  onMount(() => {
-    initUser();
+  onMount(async () => {
+    // await initUser();
+    await initGunDB();
   });
+  let storeMap = $derived($windowStores);
+  let  windowKeys = $derived(Object.keys($contentProperties.windowList));
 </script>
 
 <svelte:window onkeydown={handleKeyPress} onclick={draggableFunctions.clickFunc} />
@@ -120,13 +121,17 @@
   {...draggableFunctions}
 >
   <div id="content">
-    {#each Object.keys($contentProperties.windowList) as id (id)}
-      {#if isFrame(id)}
-        <Frame uniqueID={id} />
-      {:else}
-        <AppWindow uniqueID={id} />
-      {/if}
-    {/each}
+    {#if windowKeys.length === 0}
+      <p>Loading windows...</p>
+    {:else}
+      {#each windowKeys as uniqueID (uniqueID)}
+        {#if isFrame(uniqueID)}
+          <Frame {uniqueID} />
+        {:else}
+          <AppWindow {uniqueID} />
+        {/if}
+      {/each}
+    {/if}
   </div>
 </DraggableResizable>
 

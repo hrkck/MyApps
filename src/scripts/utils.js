@@ -20,6 +20,7 @@ export function addWindow(app, x = 0, y = 0) {
     ...app,
     component: "left-blank-for-gundb-storage",
   };
+  console.log(newAppProperties);
   addWindowStore(uid, newAppProperties);
   return newAppProperties;
 }
@@ -136,10 +137,10 @@ export function generateRandomPassword() {
 
 export function getAppIDsInAFrame(frameID) {
   if (frameID == "mainContent") {
-    return Object.keys(windowStores).filter((id) => id !== "mainContent");
+    return Object.keys(get(windowStores)).filter((id) => id !== "mainContent");
   } else {
-    return Object.keys(windowStores).filter(
-      (id) => !id.startsWith("frame-") && get(windowStores[id]).isInsideFrameID === frameID
+    return Object.keys(get(windowStores)).filter(
+      (id) => !id.startsWith("frame-") && get(get(windowStores)[id]).isInsideFrameID === frameID
     ); // notice !
   }
 }
@@ -177,7 +178,7 @@ export function getContainingRectangle(appIDs, padding = 50) {
     maxY = -Infinity;
   let appStore;
   for (const appID of appIDs) {
-    appStore = windowStores[appID];
+    appStore = get(windowStores)[appID];
     const appElem = document.getElementById(appID);
     if (appElem) {
       minX = Math.min(minX, get(appStore).x);
@@ -253,7 +254,7 @@ export function containViewToImages(imagePositions, store) {
 // defines by paratemeters.
 export function checkBoundaries(targetFrameID) {
   if (targetFrameID == "" || targetFrameID == undefined) return;
-  let targetStore = windowStores[targetFrameID];
+  let targetStore = get(windowStores)[targetFrameID];
   if (targetStore == undefined) return;
   let appIDs = getAppIDsInAFrame(targetFrameID);
   const containingRect = getContainingRectangle(appIDs);
@@ -298,7 +299,7 @@ export function checkContainerBoundaries(parentID) {
   ///
   ///
   ///
-  let targetStore = windowStores[parentID];
+  let targetStore = get(windowStores)[parentID];
   var parent = document.getElementById(parentID);
   var parentRect = parent.getBoundingClientRect();
 
@@ -319,7 +320,7 @@ export function checkContainerBoundaries(parentID) {
   // of any parent draggable with its children.
   let appStore;
   for (const appID of appIDs) {
-    appStore = windowStores[appID];
+    appStore = get(windowStores)[appID];
     appStore.update((appData) => {
       appData.x += deltaX / get(contentProperties).scale;
       appData.y += deltaY / get(contentProperties).scale;
@@ -347,7 +348,7 @@ export function getTooltipScreenPosition(event, store, containerEl, parentStore 
 
 export function activateWindow(windowID) {
   if (windowID == "") return;
-  let activeAppStore = windowStores[windowID];
+  let activeAppStore = get(windowStores)[windowID];
   activeAppStore.update((data) => {
     data.isActive = true;
     return data;
@@ -365,7 +366,7 @@ export function deactivateWindow(windowID) {
   if (windowID == "") {
     return;
   };
-  let activeAppStore = windowStores[windowID];
+  let activeAppStore = get(windowStores)[windowID];
   activeAppStore.update((data) => {
     data.isActive = false;
     return data;

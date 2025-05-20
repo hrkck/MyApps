@@ -5,7 +5,7 @@
   import { user } from "../../scripts/initGun"; // Import GunDB user
 
   let { uniqueID } = $props();
-  const mainAppStore = windowStores[uniqueID];
+  const mainAppStore = $windowStores[uniqueID];
 
   // Function to save the data to GunDB
   const saveDataToGun = (blocks) => {

@@ -7,7 +7,7 @@
 
   let { uniqueID } = $props();
   const isLinkApp = uniqueID.split("-")[0] == "linkApp";
-  const mainAppStore = windowStores[uniqueID];
+  const mainAppStore = $windowStores[uniqueID];
 
   let iconData = writable({
     linkUrl: $mainAppStore.linkUrl || "",

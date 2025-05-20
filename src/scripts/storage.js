@@ -1,5 +1,5 @@
 // storage.js
-import { readable, writable } from "svelte/store";
+import { get, readable, writable } from "svelte/store";
 import { gun, user } from "./initGun";
 
 export let contextMenu = writable({
@@ -79,28 +79,53 @@ export function removeWindowFromContent(windowId) {
   });
 }
 
+export function createStore(ref, isMap = false) {
+  const store = writable(isMap ? [] : {});
+  if (isMap) {
+    const map = new Map();
+    ref.map().on((data, key) => {
+      if (data === null) {
+        map.delete(key);
+      } else {
+        map.set(key, data);
+      }
+      store.set(Array.from(map.values()));
+    });
+  } else {
+    ref.on((data) => {
+      store.set(data); // replace entire object
+    });
+  }
+  return store;
+}
+
 // Utility function to create a writable store for a window with default properties
 export function createWindowStore(uniqueID, defaultProperties = {}) {
-  return writable({
-    uniqueID,
-    ...defaultProperties,
-  });
+  const newWindowStoreRef = user.get("windows").get(uniqueID)
+  const newWindowStore = createStore(newWindowStoreRef)
+  newWindowStoreRef.put(defaultProperties)
+  newWindowStore.set(defaultProperties)
+  console.log(defaultProperties);
+  // console.log(get(newWindowStore));
+  return newWindowStore;
 }
 
 // Maintains a JS object (map) of Svelte stores for individual windows
-export let windowStores = {};
+export const windowStores = writable({});
 // windowStores['mainContent'] = contentProperties;
 
 // Function to add a new window store to the windowStores map
+
 export function addWindowStore(uniqueID, properties) {
-  if (Object.keys(windowStores).includes(uniqueID)) return;
+  const current = get(windowStores);
+  if (current[uniqueID]) return;
   const newStore = createWindowStore(uniqueID, properties);
-  windowStores[uniqueID] = newStore;
-  addWindowToContent(uniqueID); // Also add to the content's window list
-  user
-    .get("windows")
-    .get(uniqueID)
-    .put({ ...properties });
+  windowStores.set({
+    ...current,
+    [uniqueID]: newStore
+  });
+  addWindowToContent(uniqueID);
+  user.get("windows").map().once(data=>console.log(data))
 }
 
 // Function to remove a window store from the windowStores map
@@ -117,32 +142,32 @@ export function removeWindowStore(uniqueID) {
 export function resetLocalStorage() {
   // const confirmed = window.confirm("Are you sure you want to clear localStorage and gundb?");
   // if (confirmed) {
-    console.log("clearing localStorage AND gundb");
-    sessionStorage.clear()
-    localStorage.clear()
-    caches.keys().then(keys => {
-      keys.forEach(key => caches.delete(key))
-    })
-    indexedDB.databases().then(dbs => {
-      dbs.forEach(db => indexedDB.deleteDatabase(db.name))
-    })
-    document.cookie = document.cookie.split(';').reduce((newCookie1, keyVal) => {
-      var pair = keyVal.trim().split('=')
-      if (pair[0]) {
-        if (pair[0] !== 'path' && pair[0] !== 'expires') {
-          newCookie1 += pair[0] + '=;'
-        }
+  console.log("clearing localStorage AND gundb");
+  sessionStorage.clear()
+  localStorage.clear()
+  caches.keys().then(keys => {
+    keys.forEach(key => caches.delete(key))
+  })
+  indexedDB.databases().then(dbs => {
+    dbs.forEach(db => indexedDB.deleteDatabase(db.name))
+  })
+  document.cookie = document.cookie.split(';').reduce((newCookie1, keyVal) => {
+    var pair = keyVal.trim().split('=')
+    if (pair[0]) {
+      if (pair[0] !== 'path' && pair[0] !== 'expires') {
+        newCookie1 += pair[0] + '=;'
       }
-      return newCookie1
-    }, 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path:/;')
+    }
+    return newCookie1
+  }, 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path:/;')
 
-    user.get("windows").put(null);
-    user.put(null);
-    window.alert("Close this tab to clear GUN DB storage and stop all servers.");
-    location.reload(); // Reload the page
-    // user.get("windowsStore").put(null)
-    // user.get("workspaceStore").put(null)
+  user.get("windows").put(null);
+  user.put(null);
+  window.alert("Close this tab to clear GUN DB storage and stop all servers.");
+  location.reload(); // Reload the page
+  // user.get("windowsStore").put(null)
+  // user.get("workspaceStore").put(null)
   // } else {
-    // console.log("Reset canceled.");
+  // console.log("Reset canceled.");
   // }
 }

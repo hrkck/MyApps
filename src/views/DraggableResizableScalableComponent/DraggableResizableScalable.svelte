@@ -424,7 +424,7 @@
   }
 
   export function isWindowInAFrame(e) {
-    let frameIDs = Object.keys(windowStores).filter((id) => id.startsWith("frame-"));
+    let frameIDs = Object.keys($windowStores).filter((id) => id.startsWith("frame-"));
     for (const frameID of frameIDs) {
       const frameElem = document.getElementById(frameID);
       if (frameElem) {

@@ -1,6 +1,6 @@
 <script>
   import { get, writable } from "svelte/store";
-  import { contentProperties, windowStores } from "../../scripts/storage";
+  import { contentProperties, createStore, windowStores } from "../../scripts/storage";
   import {
     cleanGunData,
     containViewToImages,
@@ -13,7 +13,7 @@
   } from "../../scripts/utils";
   import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import Background from "../Background.svelte";
-  import { user } from "../../scripts/initGun";
+  import { gun, user } from "../../scripts/initGun";
   import { onDestroy, onMount } from "svelte";
   import Text from "../Elements/Text.svelte";
   import DraggableImage from "../Elements/DraggableImage.svelte";
@@ -27,7 +27,8 @@
 
   /** @type {Props} */
   let { uniqueID, draggableAreaElement = $bindable() } = $props();
-  const mainAppStore = windowStores[uniqueID];
+  const mainAppStore = $windowStores[uniqueID];
+  console.log(mainAppStore);
 
   let zoomIndicatorRef;
 
@@ -43,7 +44,9 @@
   const IMAGE_GAP = 100;
 
   // bind with gundb init
-  const imageAppStore = writable({
+  const imageAppStoreRef = gun.get('windows').get(uniqueID).get('imageAppStore')
+  const imageAppStore = createStore(imageAppStoreRef); // writable();
+  const imageAppStoreProps = {
     uniqueID: uniqueID + "-imageReferenceAppContent",
     mainAppStoreID: uniqueID,
     hideOverflow: false,
@@ -63,7 +66,9 @@
     zIndex: 2,
     isActiveDraggable: $mainAppStore.isActive,
     backgroundColor: "rgb(214, 255, 185)",
-  });
+  }
+  imageAppStore.set(imageAppStoreProps)
+  imageAppStoreRef.put(imageAppStoreProps)
 
   // update active state across relevant components:
   $effect(() => {

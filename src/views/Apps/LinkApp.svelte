@@ -6,7 +6,7 @@
   import { user } from "../../scripts/initGun";
 
   let { uniqueID } = $props();
-  const mainAppStore = windowStores[uniqueID];
+  const mainAppStore = $windowStores[uniqueID];
   console.log('HELOOOO');
   const linkData = writable({
     linkUrl: $mainAppStore.linkUrl || "",
