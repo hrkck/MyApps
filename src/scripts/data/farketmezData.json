@@ -1,0 +1,22 @@
+{
+  "istanbul": {
+    "Food Palace": {
+      "address": "Istiklal Cad. No:34",
+      "kebab": {
+        "Adana Kebab": "90₺",
+        "Urfa Kebab": "85₺"
+      },
+      "soup": {
+        "Mercimek Çorbası": "40₺",
+        "Ezogelin": "45₺"
+      }
+    },
+    "Soup World": {
+      "address": "Kadıköy Rıhtım",
+      "soup": {
+        "Mercimek": "35₺",
+        "Tavuk Suyu": "50₺"
+      }
+    }
+  }
+}

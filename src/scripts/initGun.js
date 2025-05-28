@@ -20,13 +20,13 @@ export const user = gun.user().recall({ sessionStorage: true });
 export const username = writable('');
 
 
-console.log(Object.keys(gun.back('opt').peers));
+// console.log(Object.keys(gun.back('opt').peers));
 
 user.get('alias').on(v => username.set(v))
 gun.on('auth', async (event)=>{
   const alias = await user.get('alias');
   username.set(alias);
-  username.subscribe((alias)=>console.log(alias))
+  // username.subscribe((alias)=>console.log(alias))
 })
 
 export async function initGunDB() {
@@ -34,7 +34,6 @@ export async function initGunDB() {
     .get("windows")
     .map()
     .once((data) => {
-      console.log(data.uniqueID, cleanGunData(data));
       if (data && data.uniqueID) {
         addWindowStore(data.uniqueID, cleanGunData(data));
       }

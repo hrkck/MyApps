@@ -28,7 +28,6 @@
   /** @type {Props} */
   let { uniqueID, draggableAreaElement = $bindable() } = $props();
   const mainAppStore = $windowStores[uniqueID];
-  console.log(mainAppStore);
 
   let zoomIndicatorRef;
 
@@ -93,7 +92,6 @@
   onMount(async () => {
     await initializeAppData();
     loading = false;
-    console.log("finished loading images for , ", uniqueID);
     document.addEventListener("paste", pasteListener, true);
   });
 
@@ -110,10 +108,14 @@
       .get("workspaceData")
       .once((data) => {
         if (data) {
-          $imageAppStore.x = data.x;
-          $imageAppStore.y = data.y;
-          $imageAppStore.scale = data.scale;
-          $imageAppStore.contentScale = $contentProperties.scale;
+          imageAppStore.update((s)=> {return  {
+            ...s,
+            x: data.x,
+            y: data.y,
+            scale: data.scale,
+            contentScale: $contentProperties.scale
+          }})
+          
         }
       });
 
@@ -575,18 +577,24 @@
       {...draggableFunctions}
     >
       <!-- {#if loading} -->
-        <!-- content here -->
-         <!-- <h1>LOADING</h1> -->
+      <!-- content here -->
+      <!-- <h1>LOADING</h1> -->
       <!-- {:else} -->
-        <!-- image handling -->
-        {#each images as { imageUrl, key, imageStore } (key)}
-          <DraggableImage {imageUrl} uniqueID={key} {imageStore} {imageAppStore} imageAppContainer={draggableAreaElement} />
-        {/each}
+      <!-- image handling -->
+      {#each images as { imageUrl, key, imageStore } (key)}
+        <DraggableImage
+          {imageUrl}
+          uniqueID={key}
+          {imageStore}
+          {imageAppStore}
+          imageAppContainer={draggableAreaElement}
+        />
+      {/each}
 
-        <!-- Text handling -->
-        {#each texts as { key, textStore } (key)}
-          <Text uniqueID={key} {textStore} {imageAppStore} />
-        {/each}
+      <!-- Text handling -->
+      {#each texts as { key, textStore } (key)}
+        <Text uniqueID={key} {textStore} {imageAppStore} />
+      {/each}
       <!-- {/if} -->
     </DraggableResizable>
     <Background store={imageAppStore} />

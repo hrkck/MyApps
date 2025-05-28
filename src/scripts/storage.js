@@ -105,8 +105,6 @@ export function createWindowStore(uniqueID, defaultProperties = {}) {
   const newWindowStore = createStore(newWindowStoreRef)
   newWindowStoreRef.put(defaultProperties)
   newWindowStore.set(defaultProperties)
-  console.log(defaultProperties);
-  // console.log(get(newWindowStore));
   return newWindowStore;
 }
 
@@ -125,7 +123,7 @@ export function addWindowStore(uniqueID, properties) {
     [uniqueID]: newStore
   });
   addWindowToContent(uniqueID);
-  user.get("windows").map().once(data=>console.log(data))
+  // user.get("windows").map().once(data=>console.log(data))
 }
 
 // Function to remove a window store from the windowStores map

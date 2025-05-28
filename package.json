@@ -14,6 +14,7 @@
     "@tsconfig/svelte": "^5.0.4",
     "svelte": "^5.28.2",
     "svelte-check": "^4.1.7",
+    "tailwindcss": "^4.1.8",
     "typescript": "~5.7.2",
     "vite": "^6.3.5"
   },
@@ -26,6 +27,7 @@
     "@editorjs/inline-code": "^1.5.1",
     "@editorjs/list": "^2.0.8",
     "@editorjs/quote": "^2.7.6",
+    "@tailwindcss/vite": "^4.1.8",
     "gun": "^0.2020.1240"
   }
 }

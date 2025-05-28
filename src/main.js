@@ -3,7 +3,7 @@ import App from "./App.svelte";
 import { mount } from "svelte";
 
 console.log("MyApps.");
-console.log('version: 0.0.10');
+console.log('version: 0.0.11');
 
 const app = mount(App, {
   target: document.body,

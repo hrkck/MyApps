@@ -12,14 +12,10 @@
   export let uniqueID;
   let draggableComponent; // ref to draggable component
   const store = $windowStores[uniqueID];
-  console.log(store);
   let appComponent = null; // Will hold the dynamically loaded component
   let isLoading = false; // Flag to indicate if the component is loading
   let loadError = null; // To capture any loading errors
 
-  console.log(uniqueID);
-  // console.log(typeof uniqueID);
-  // console.log($store);
   const isLinkApp = uniqueID.split("-")[0] == "linkApp";
 
   $store.contentScale = $contentProperties.scale;

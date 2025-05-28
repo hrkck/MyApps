@@ -1,40 +1,58 @@
 <script>
   import { onDestroy } from "svelte";
+  import { gun } from "../../scripts/initGun";
+  import { cleanGunData } from "../../scripts/utils";
+    import { SvelteSet } from "svelte/reactivity";
 
   let { uniqueID } = $props();
   let count = $state(0);
-
-  let currentTime = $state("");
-  let currentDate = $state("");
 
   function increment() {
     count += 1;
   }
 
-  function updateTime() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    const seconds = String(now.getSeconds()).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const year = now.getFullYear();
-    const weekday = now.toLocaleString("default", { weekday: "long" });
+  // ########################################
+  let currentTime = $state(0);
+  let lastUpdateTime = $state(Date.now());
+  let responseTime = $state(0);
+  let peerList = new SvelteSet();
+  let peerCount = $state(0);
 
-    currentTime = `${hours}:${minutes}:${seconds}`;
-    currentDate = `${day}.${month}.${year} \n ${weekday}`;
+  // Function to update the time
+  function updateTime() {
+    lastUpdateTime = Date.now();;
+    gun.get("currenttime").put({ time: lastUpdateTime });
   }
 
-  // Update time every second
-  const interval = setInterval(updateTime, 1000);
+  // Initial time push
+  updateTime();
 
-  // Ensure interval is cleared when the component is destroyed
-  onDestroy(() => {
-    clearInterval(interval);
+  // Subscribe to changes
+  gun.get("currenttime").on((data, key, msg, ev) => {
+    const now = Date.now();
+    if (data?.time && data.time !== currentTime) {
+      responseTime = now - data.time;
+      currentTime = data.time;
+
+      // Try to identify peer from msg
+      if (msg?.headers?.via) {
+        peerList.add(msg.headers.via);
+      } else if (msg?.via) {
+        peerList.add(msg.via);
+      } else if (msg?.soul) {
+        peerList.add(msg.soul); // Fallback
+      }
+
+      peerCount = peerList.size;
+    }
   });
 
-  // Initialize the time and date immediately
-  updateTime();
+
+  let note = gun.get("myappnotes").get("textarea");
+  let text = $state("");
+  note.on((data) => {
+    text = cleanGunData(data);
+  });
 </script>
 
 <div class="example-app">
@@ -42,9 +60,32 @@
   <p>count: {count}</p>
   <input type="button" value="increment" onclick={increment} />
   <br />
-  <br>
+  <br />
   <p>Time: {currentTime}</p>
-  <p>Date: {currentDate}</p>
+
+  <hr />
+
+  <div class="p-4 bg-gray-100 rounded shadow">
+    <h2 class="text-xl font-bold">🕒 Current Time Sync</h2>
+
+    <p>Last synced time: {new Date(currentTime).toLocaleTimeString()}</p>
+    <p>⏱ Peer response time: {responseTime} ms</p>
+    <p>🌍 Peers count: {peerCount}</p>
+
+    <ul class="mt-2 list-disc list-inside text-sm">
+      {#each Array.from(peerList) as peer}
+        <li>{peer}</li>
+      {/each}
+    </ul>
+
+    <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded" onclick={updateTime}>
+      Update Time
+    </button>
+
+    <hr />
+
+    <textarea name="" id="" bind:value={text} oninput={(value) => note.put(text)}></textarea>
+  </div>
 </div>
 
 <style>
