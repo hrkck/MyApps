@@ -143,11 +143,12 @@
 </script>
 
 <DraggableResizable {uniqueID} {store} {...draggableFunctions} bind:this={draggableComponent}>
-  <div id={uniqueID + "-appcontent"} class="app-content" class:pointer-events={!$store.isActive && !isLinkApp}>
+  <div id={uniqueID + "-appcontent"} class="app-content" class:pointer-events={!$store.isActive && (!isLinkApp || !showIcon)}>
     {#if showIcon}
       <AppPreview {uniqueID} />
     {:else if appComponent}
-      <svelte:component this={appComponent} {uniqueID} />
+      {@const App = appComponent}
+      <App {uniqueID} />
     {:else if isLoading}
       <p>Loading...</p>
     {:else if loadError}

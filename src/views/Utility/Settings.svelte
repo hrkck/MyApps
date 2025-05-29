@@ -39,11 +39,12 @@
 
   export function handleToggleSettings(e) {
     $isSettingsOpen = !$isSettingsOpen;
-    $isSettingsOpen? createOverlay()  : destroyOverlay();
+    $isSettingsOpen ? createOverlay() : destroyOverlay();
     $contentProperties.isAWindowActive = $isSettingsOpen ? "settings" : false;
     if (!$isSettingsOpen) {
       deactivateWindow($contentProperties.activeWindow);
     }
+    document.activeElement.blur();
   }
 
   async function handleClick() {
@@ -80,9 +81,11 @@
   function handleKeyPress(event) {
     if (event.key === "Escape") {
       console.log("ESC presses");
-      handleToggleSettings(event);
-      if ($contentProperties.isAWindowActivated) {
-        deactivateWindow($contentProperties.activeWindow);
+      if ($isSettingsOpen) {
+        handleToggleSettings(event);
+        if ($contentProperties.isAWindowActivated) {
+          deactivateWindow($contentProperties.activeWindow);
+        }
       }
     }
   }

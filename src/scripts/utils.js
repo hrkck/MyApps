@@ -266,7 +266,7 @@ export function containViewToImages(imagePositions, store, draggableAreaRect, pa
   const scaleX = window.innerWidth / (rect.width - 100);
   const scaleY = window.innerHeight / (rect.height - 100);
   console.log(rect);
-  const scale = Math.min(scaleX, scaleY) ;
+  const scale = Math.min(scaleX, scaleY);
 
   // Calculate the center of the containing rectangle
   const centerX = rect.left + rect.width / 2;
@@ -413,6 +413,7 @@ export function deactivateWindow(windowID) {
     data.backgroundColor = "rgb(245, 245, 245)";
     return data;
   });
+  document.activeElement.blur();
 }
 
 

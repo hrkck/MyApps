@@ -17,7 +17,7 @@
   import { onDestroy, onMount } from "svelte";
   import Text from "../Elements/Text.svelte";
   import DraggableImage from "../Elements/DraggableImage.svelte";
-    import ZoomIndicator from "../Utility/ZoomIndicator.svelte";
+  import ZoomIndicator from "../Utility/ZoomIndicator.svelte";
 
   /**
    * @typedef {Object} Props
@@ -42,7 +42,7 @@
   const IMAGE_GAP = 100;
 
   // bind with gundb init
-  const imageAppStoreRef = gun.get('windows').get(uniqueID).get('imageAppStore')
+  const imageAppStoreRef = gun.get("windows").get(uniqueID).get("imageAppStore");
   const imageAppStore = createStore(imageAppStoreRef); // writable();
   const imageAppStoreProps = {
     uniqueID: uniqueID + "-imageReferenceAppContent",
@@ -64,13 +64,12 @@
     zIndex: 2,
     isActiveDraggable: $mainAppStore.isActive,
     backgroundColor: "rgb(245, 255, 247)",
-  }
-  imageAppStore.set(imageAppStoreProps)
-  imageAppStoreRef.put(imageAppStoreProps)
+  };
+  imageAppStore.set(imageAppStoreProps);
+  imageAppStoreRef.put(imageAppStoreProps);
 
   // update active state across relevant components:
   $effect(() => {
-console.log($mainAppStore.selected);
     // make each image also active when main app is active
     $imageAppStore.isActiveDraggable = $mainAppStore.isActive;
     images.forEach((imgObj) => {
@@ -108,14 +107,15 @@ console.log($mainAppStore.selected);
       .get("workspaceData")
       .once((data) => {
         if (data) {
-          imageAppStore.update((s)=> {return  {
-            ...s,
-            x: data.x,
-            y: data.y,
-            scale: data.scale,
-            contentScale: $contentProperties.scale
-          }})
-          
+          imageAppStore.update((s) => {
+            return {
+              ...s,
+              x: data.x,
+              y: data.y,
+              scale: data.scale,
+              contentScale: $contentProperties.scale,
+            };
+          });
         }
       });
 
@@ -256,7 +256,7 @@ console.log($mainAppStore.selected);
         // Compute visible size
 
         const containerRect = draggableAreaElement.getBoundingClientRect();
-        const totalScale = $contentProperties.scale * store.scale;  // combine scales
+        const totalScale = $contentProperties.scale * store.scale; // combine scales
 
         const visibleWidth = containerRect.width / totalScale;
         const visibleHeight = containerRect.height / totalScale;
@@ -445,7 +445,7 @@ console.log($mainAppStore.selected);
     let rowHeight = 0;
 
     let imgPositions = [];
-    const MAX_ROW_WIDTH = IMAGE_GAP * 2 + Math.max(...images.map(img => img.width)) * 4;
+    const MAX_ROW_WIDTH = IMAGE_GAP * 2 + Math.max(...images.map((img) => img.width)) * 4;
     for (const img of images) {
       if (offsetX + img.width > MAX_ROW_WIDTH) {
         offsetX = 0;
@@ -457,13 +457,17 @@ console.log($mainAppStore.selected);
       const finalY = originY + offsetY;
 
       handleImageData(img.dataUrl, finalX, finalY);
-      imgPositions.push({x: finalX, y: finalY, width: img.width, height: img.height});
+      imgPositions.push({ x: finalX, y: finalY, width: img.width, height: img.height });
 
       offsetX += img.width + IMAGE_GAP;
       rowHeight = Math.max(rowHeight, img.height);
     }
-    if(images.length>1){
-      containViewToImages(imgPositions, imageAppStore, draggableAreaElement.getBoundingClientRect());
+    if (images.length > 1) {
+      containViewToImages(
+        imgPositions,
+        imageAppStore,
+        draggableAreaElement.getBoundingClientRect(),
+      );
     }
   }
 
