@@ -14,6 +14,7 @@ const AppProperties = {
   isActiveDraggable: false,
   scale: 1,
   isActive: false,
+  selected: false,
   zIndex: 11,
 };
 
@@ -32,6 +33,7 @@ const FrameProperties = {
   zIndex: 2,
   isActiveDraggable: false,
   isActive: false,
+  selected: false,
 };
 
 // Applications:

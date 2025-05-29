@@ -39,7 +39,6 @@
   let loading = $state(true);
 
   // Constants
-  const MAX_ROW_WIDTH = 12000;
   const IMAGE_GAP = 100;
 
   // bind with gundb init
@@ -64,13 +63,14 @@
     scale: 1,
     zIndex: 2,
     isActiveDraggable: $mainAppStore.isActive,
-    backgroundColor: "rgb(214, 255, 185)",
+    backgroundColor: "rgb(245, 255, 247)",
   }
   imageAppStore.set(imageAppStoreProps)
   imageAppStoreRef.put(imageAppStoreProps)
 
   // update active state across relevant components:
   $effect(() => {
+console.log($mainAppStore.selected);
     // make each image also active when main app is active
     $imageAppStore.isActiveDraggable = $mainAppStore.isActive;
     images.forEach((imgObj) => {
@@ -445,6 +445,7 @@
     let rowHeight = 0;
 
     let imgPositions = [];
+    const MAX_ROW_WIDTH = IMAGE_GAP * 2 + Math.max(...images.map(img => img.width)) * 4;
     for (const img of images) {
       if (offsetX + img.width > MAX_ROW_WIDTH) {
         offsetX = 0;
@@ -461,7 +462,9 @@
       offsetX += img.width + IMAGE_GAP;
       rowHeight = Math.max(rowHeight, img.height);
     }
-    containViewToImages(imgPositions, $imageAppStore);
+    if(images.length>1){
+      containViewToImages(imgPositions, imageAppStore, draggableAreaElement.getBoundingClientRect());
+    }
   }
 
   // Function to handle drop event

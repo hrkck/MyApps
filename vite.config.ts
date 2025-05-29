@@ -34,7 +34,7 @@ export default defineConfig({
   },
   plugins: [
     moduleExclude('text-encoding'),
-    tailwindcss(),
+    // tailwindcss(),
     svelte(),
   ],
 })

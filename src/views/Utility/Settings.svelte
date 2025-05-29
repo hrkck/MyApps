@@ -1,6 +1,6 @@
 <!-- Settings.svelte -->
 <script>
-  import { preventDefault, stopPropagation } from 'svelte/legacy';
+  import { preventDefault, stopPropagation } from "svelte/legacy";
 
   // import { resetLocalStorage } from "../../store.js";
   import { writable } from "svelte/store";
@@ -8,17 +8,38 @@
   import Login from "./Login.svelte";
   import { deactivateWindow } from "../../scripts/utils";
   import SEA from "gun/sea";
-    import ConfirmDialog from './ConfirmDialog.svelte';
-    import { customConfirm, handleConfirmResponse, message, visible } from '../../scripts/confirm';
+  import ConfirmDialog from "./ConfirmDialog.svelte";
+  import { customConfirm, handleConfirmResponse, message, visible } from "../../scripts/confirm";
 
   let { isSettingsOpen = writable(false) } = $props();
   const activeTab = writable("Login/Register/Sync");
 
-  function handleToggleSettings(e) {
+  function createOverlay() {
+    const overlay = document.createElement("div");
+    overlay.id = "fullscreen-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "100vw",
+      height: "100vh",
+      backgroundColor: "rgba(180, 180, 180, 0.3)", // semi-transparent
+      zIndex: "500",
+      pointerEvents: "none", // optional: allows clicks to pass through
+    });
+    document.body.appendChild(overlay);
+  }
+
+  function destroyOverlay() {
+    const overlay = document.getElementById("fullscreen-overlay");
+    if (overlay) {
+      overlay.remove();
+    }
+  }
+
+  export function handleToggleSettings(e) {
     $isSettingsOpen = !$isSettingsOpen;
-    $contentProperties.backgroundColor = $isSettingsOpen
-      ? "rgb(199, 205, 213)"
-      : "rgb(245, 252, 255)";
+    $isSettingsOpen? createOverlay()  : destroyOverlay();
     $contentProperties.isAWindowActive = $isSettingsOpen ? "settings" : false;
     if (!$isSettingsOpen) {
       deactivateWindow($contentProperties.activeWindow);
@@ -52,11 +73,22 @@
     }
   }
 
-
   function setActiveTab(tab) {
     activeTab.set(tab);
   }
+
+  function handleKeyPress(event) {
+    if (event.key === "Escape") {
+      console.log("ESC presses");
+      handleToggleSettings(event);
+      if ($contentProperties.isAWindowActivated) {
+        deactivateWindow($contentProperties.activeWindow);
+      }
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleKeyPress} />
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div id="gear-button-container" oncontextmenu={stopPropagation(preventDefault(() => {}))}>
@@ -101,12 +133,11 @@
           <h1>RESET ALL DATA</h1>
           <button onclick={handleResetWorkspace}>Reset Workspace</button>
 
-
           <ConfirmDialog
-          bind:visible={$visible}
-          bind:message={$message}
-          onConfirm={onConfirmDelete}
-          onCancel={onCancelDelete}
+            bind:visible={$visible}
+            bind:message={$message}
+            onConfirm={onConfirmDelete}
+            onCancel={onCancelDelete}
           />
         {/if}
       </div>
@@ -114,11 +145,9 @@
   </div>
 {/if}
 
-
 <style>
-  #gear-button-container{
+  #gear-button-container {
     z-index: 1000;
-
   }
   .gear-button {
     height: 30px;

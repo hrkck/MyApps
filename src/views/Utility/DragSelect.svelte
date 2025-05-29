@@ -1,14 +1,13 @@
 <!--  Workscape.svelte -->
 <script>
   import { get } from "svelte/store";
-  import { workspaceStore, windowsStore, windowPropertyStores } from "../../store.js";
   import { onMount, onDestroy } from "svelte";
-  import { updateWindowStore } from "../../js/utils.js";
+  import { contentProperties, isDraggingSelect, windowStores } from "../../scripts/storage.js";
+  import { deactivateWindow } from "../../scripts/utils.js";
 
-  let isDraggingSelect = $state(false);
   let dragSelectDiv = $state();
-  let dragSelectDivWidth = $state(0);
-  let dragSelectDivHeight = $state(0);
+  let dragSelectDivWidth = $state("");
+  let dragSelectDivHeight = $state("");
   let dragSelectDivTop = $state("0px");
   let dragSelectDivLeft = $state("0px");
 
@@ -16,13 +15,13 @@
     if (event.button === 0 && event.shiftKey) {
       createOrUpdateDragSelect(event);
       window.addEventListener("mouseup", handleSelectMouseUp);
-      isDraggingSelect = true;
+      $isDraggingSelect = true;
     }
   }
 
   function handleSelectMouseUp() {
     window.removeEventListener("mouseup", handleSelectMouseUp);
-    isDraggingSelect = false;
+    $isDraggingSelect = false;
   }
 
   function createOrUpdateDragSelect(event) {
@@ -59,44 +58,42 @@
     }
     const { x, y, height, width } = select;
 
-    const windows = $windowsStore || [];
-
-    for (const windowData of windows) {
+    for (const windowData of Object.values(get(windowStores))) {
       const windowElem =
-        document.getElementById(`app-${windowData.windowId}`) ||
-        document.getElementById(`frame-${windowData.windowId}`);
-      const index = $workspaceStore.selectedWindows.indexOf(windowData.windowId);
+        document.getElementById(`${get(windowData).uniqueID}`) ||
+        document.getElementById(`${get(windowData).uniqueID}`);
+      const index = $contentProperties.selectedWindows.indexOf(get(windowData).uniqueID);
       if (windowElem) {
         const rect = windowElem.getBoundingClientRect();
         if (
           checkRectIntersection(
             { x: x + window.scrollX, y: y + window.scrollY, height, width },
-            rect
+            rect,
           )
         ) {
           // If the window is within the selection, add to list
-          $workspaceStore.selectedWindows = [
-            ...$workspaceStore.selectedWindows,
-            windowData.windowId,
+          $contentProperties.selectedWindows = [
+            ...$contentProperties.selectedWindows,
+            get(windowData).uniqueID,
           ];
+          windowData.update((store) => {
+            store.selected = true;
+            return store;
+          });
         } else if (index != -1) {
-          $workspaceStore.selectedWindows.splice(index, 1);
-          $workspaceStore.selectedWindows = $workspaceStore.selectedWindows;
-        }
-      }
-      $workspaceStore.selectedWindows = [...new Set($workspaceStore.selectedWindows)];
-    }
-    // first if a window is active, deactivate it
-    if ($workspaceStore.isAWindowActivated) {
-      $workspaceStore.isAWindowActivated = false;
-      windowPropertyStores.forEach((store) => {
-        if (get(store).isActiveApp == true) {
-          updateWindowStore(get(store).windowId, (props) => {
-            props.isActiveApp = false;
-            return props;
+          $contentProperties.selectedWindows.splice(index, 1);
+          $contentProperties.selectedWindows = $contentProperties.selectedWindows;
+          windowData.update((store) => {
+            store.selected = false;
+            return store;
           });
         }
-      });
+      }
+      $contentProperties.selectedWindows = [...new Set($contentProperties.selectedWindows)];
+    }
+    // first if a window is active, deactivate it
+    if ($contentProperties.isAWindowActivated) {
+      deactivateWindow($contentProperties.activeWindow);
     }
   }
 
@@ -120,7 +117,7 @@
     if (event.code == "ShiftLeft") {
       window.removeEventListener("mouseup", handleSelectMouseUp);
       window.removeEventListener("mousedown", handleSelectMouseDown);
-      isDraggingSelect = false;
+      $isDraggingSelect = false;
     }
   }
 
@@ -135,7 +132,7 @@
   });
 </script>
 
-{#if isDraggingSelect}
+{#if $isDraggingSelect}
   <div
     bind:this={dragSelectDiv}
     class="drag-select"

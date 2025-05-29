@@ -31,7 +31,6 @@
       const encryptedAlias = localStorage.getItem("encryptedAlias");
       const encryptedPass = localStorage.getItem("encryptedPass");
       const pairSerialized = localStorage.getItem("pair");
-      console.log(encryptedAlias && encryptedPass && pairSerialized);
 
       if (encryptedAlias && encryptedPass && pairSerialized) {
         const pair = JSON.parse(pairSerialized); // Deserialize the pair
@@ -66,7 +65,6 @@
 
   const signIn = async () => {
     try {
-      console.log($username, pass);
       gun.get(`~@${$username}`).once((data) => {
         console.log("alias lookup:", data);
       });

@@ -11,6 +11,9 @@ export let contextMenu = writable({
   originalTargetID: "none",
 });
 
+export let isDraggingSelect = writable(false);
+
+
 // Helper function to initialize and manage local storage-backed Svelte stores
 export function getLocalStorage(key, initialValue) {
   const storedValue = localStorage.getItem(key);
@@ -45,7 +48,7 @@ export let contentProperties = getLocalStorage("mainContent", {
   height: 300,
   scale: 1,
   contentScale: 1,
-  backgroundColor: "rgb(241, 247, 255)",
+  backgroundColor: "rgb(245, 245, 245)",
   isInsideFrameID: "",
   zIndex: 1,
   windowList: {},
@@ -128,8 +131,8 @@ export function addWindowStore(uniqueID, properties) {
 
 // Function to remove a window store from the windowStores map
 export function removeWindowStore(uniqueID) {
-  if (windowStores[uniqueID]) {
-    delete windowStores[uniqueID];
+  if (get(windowStores)[uniqueID]) {
+    delete get(windowStores)[uniqueID];
     removeWindowFromContent(uniqueID); // Also remove from the content's window list
     user.get("windows").get(uniqueID).put(null);
   }
@@ -138,34 +141,34 @@ export function removeWindowStore(uniqueID) {
 
 // Function to reset localStorage
 export function resetLocalStorage() {
-  // const confirmed = window.confirm("Are you sure you want to clear localStorage and gundb?");
-  // if (confirmed) {
-  console.log("clearing localStorage AND gundb");
-  sessionStorage.clear()
-  localStorage.clear()
-  caches.keys().then(keys => {
-    keys.forEach(key => caches.delete(key))
-  })
-  indexedDB.databases().then(dbs => {
-    dbs.forEach(db => indexedDB.deleteDatabase(db.name))
-  })
-  document.cookie = document.cookie.split(';').reduce((newCookie1, keyVal) => {
-    var pair = keyVal.trim().split('=')
-    if (pair[0]) {
-      if (pair[0] !== 'path' && pair[0] !== 'expires') {
-        newCookie1 += pair[0] + '=;'
+  const confirmed = window.confirm("Are you sure you want to clear localStorage and gundb?");
+  if (confirmed) {
+    console.log("clearing localStorage AND gundb");
+    sessionStorage.clear()
+    localStorage.clear()
+    caches.keys().then(keys => {
+      keys.forEach(key => caches.delete(key))
+    })
+    indexedDB.databases().then(dbs => {
+      dbs.forEach(db => indexedDB.deleteDatabase(db.name))
+    })
+    document.cookie = document.cookie.split(';').reduce((newCookie1, keyVal) => {
+      var pair = keyVal.trim().split('=')
+      if (pair[0]) {
+        if (pair[0] !== 'path' && pair[0] !== 'expires') {
+          newCookie1 += pair[0] + '=;'
+        }
       }
-    }
-    return newCookie1
-  }, 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path:/;')
+      return newCookie1
+    }, 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path:/;')
 
-  user.get("windows").put(null);
-  user.put(null);
-  window.alert("Close this tab to clear GUN DB storage and stop all servers.");
-  location.reload(); // Reload the page
-  // user.get("windowsStore").put(null)
-  // user.get("workspaceStore").put(null)
-  // } else {
-  // console.log("Reset canceled.");
-  // }
+    user.get("windows").put(null);
+    user.put(null);
+    window.alert("Close this tab to clear GUN DB storage and stop all servers.");
+    location.reload(); // Reload the page
+    // user.get("windowsStore").put(null)
+    // user.get("workspaceStore").put(null)
+  } else {
+    console.log("Reset canceled.");
+  }
 }

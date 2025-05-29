@@ -139,8 +139,7 @@ export function getAppIDsInAFrame(frameID) {
     return Object.keys(get(windowStores)).filter((id) => id !== "mainContent");
   } else {
     return Object.keys(get(windowStores)).filter(
-      (id) => !id.startsWith("frame-") && get(get(windowStores)[id]).isInsideFrameID === frameID
-    ); // notice !
+      (id) => !id.startsWith("frame-") && get(get(windowStores)[id]).isInsideFrameID === frameID); // notice !
   }
 }
 
@@ -170,41 +169,23 @@ export function getImageDimensions(dataUrl) {
   });
 }
 
-export function getContainingRectangle(appIDs, padding = 50) {
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-  let appStore;
-  for (const appID of appIDs) {
-    appStore = get(windowStores)[appID];
-    const appElem = document.getElementById(appID);
-    if (appElem) {
-      minX = Math.min(minX, get(appStore).x);
-      minY = Math.min(minY, get(appStore).y);
-      maxX = Math.max(maxX, get(appStore).x + get(appStore).width);
-      maxY = Math.max(maxY, get(appStore).y + get(appStore).height);
-    }
-  }
-  return {
-    left: minX - padding,
-    top: minY - padding,
-    right: maxX + padding,
-    bottom: maxY + padding,
-  };
-}
 
-export function getContainingRectangleOfImages(imagePositions, padding = 50) {
+function calculateBoundingBox(items, getPositionFn, padding = 50) {
   let minX = Infinity,
     minY = Infinity,
     maxX = -Infinity,
     maxY = -Infinity;
-  for (const pos of imagePositions) {
+
+  for (const item of items) {
+    const pos = getPositionFn(item);
+    if (!pos) continue;
+
     minX = Math.min(minX, pos.x);
     minY = Math.min(minY, pos.y);
     maxX = Math.max(maxX, pos.x + pos.width);
     maxY = Math.max(maxY, pos.y + pos.height);
   }
+
   return {
     left: minX - padding,
     top: minY - padding,
@@ -213,17 +194,28 @@ export function getContainingRectangleOfImages(imagePositions, padding = 50) {
   };
 }
 
-// This function does not work as intended, although it is kinda useful
-// I think it is not taking into account the current zoom from contentProperties.
-export function containViewToImages(imagePositions, store) {
-  console.log(imagePositions);
-  console.log(store);
-  const rect = getContainingRectangleOfImages(imagePositions, 50); // Assuming padding is 50
+export function getContainingRectangleOfApps(appIDs, padding = 50) {
+  return calculateBoundingBox(appIDs, (appID) => {
+    const appStore = get(windowStores)[appID];
+    const appElem = document.getElementById(appID);
+    return appElem ? get(appStore) : null;
+  }, padding);
+}
+
+export function getContainingRectangleOfImages(imagePositions, padding = 50) {
+  return calculateBoundingBox(imagePositions, (pos) => pos, padding);
+}
+
+export function frameApps(appIDs) {
+  const rect = getContainingRectangleOfApps(appIDs, 50); // Assuming padding is 50
 
   if (rect.left === Infinity || rect.top === Infinity) {
-    store.scale = 1;
-    store.x = window.innerWidth / 2;
-    store.y = window.innerHeight / 2;
+    contentProperties.update(d => {
+      d.scale = scale;
+      d.x = window.innerWidth / 2;
+      d.y = window.innerHeight / 2;
+      return d;
+    })
     return;
   }
 
@@ -240,12 +232,56 @@ export function containViewToImages(imagePositions, store) {
   const centerY = rect.top + rect.height / 2;
 
   // Calculate the new content position to center the view on the containing rectangle
-  store.scale = scale;
-  store.x = window.innerWidth / 2 - centerX * scale;
-  store.y = window.innerHeight / 2 - centerY * scale;
-
-  // Deactivate any active window
+  contentProperties.update(d => {
+    d.scale = scale;
+    d.x = window.innerWidth / 2 - centerX * scale;
+    d.y = window.innerHeight / 2 - centerY * scale;
+    return d
+  })
 }
+
+// This function does not work as intended, although it is kinda useful
+// I think it is not taking into account the current zoom from contentProperties.
+export function containViewToImages(imagePositions, store, draggableAreaRect, padding = 50) {
+  const rect = getContainingRectangleOfImages(imagePositions, 50); // Assuming padding is 50
+
+  if (rect.left === Infinity || rect.top === Infinity) {
+    store.update(d => {
+      d.scale = scale;
+      d.x = window.innerWidth / 2;
+      d.y = window.innerHeight / 2;
+      return d
+    })
+    return;
+  }
+
+  rect.width = rect.right - rect.left;
+  rect.height = rect.bottom - rect.top;
+
+  draggableAreaRect.width = draggableAreaRect.right - draggableAreaRect.left;
+  draggableAreaRect.height = draggableAreaRect.bottom - draggableAreaRect.top;
+
+
+  // Calculate the scale factor to fit the entire rectangle in the view
+  const scaleX = window.innerWidth / (rect.width - 100);
+  const scaleY = window.innerHeight / (rect.height - 100);
+  console.log(rect);
+  const scale = Math.min(scaleX, scaleY) ;
+
+  // Calculate the center of the containing rectangle
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  // Calculate the new content position to center the view on the containing rectangle
+  store.update(d => {
+    d.scale = scale;
+    d.x = window.innerWidth / 2 - centerX * scale;
+    d.y = window.innerHeight / 2 - centerY * scale;
+    return d
+  })
+}
+
+
 
 // Dynamic updating of Boundaries
 // this function updates x,y,width,height of
@@ -256,7 +292,7 @@ export function checkBoundaries(targetFrameID) {
   let targetStore = get(windowStores)[targetFrameID];
   if (targetStore == undefined) return;
   let appIDs = getAppIDsInAFrame(targetFrameID);
-  const containingRect = getContainingRectangle(appIDs);
+  const containingRect = getContainingRectangleOfApps(appIDs);
 
   const minWidth = 320;
   const minHeight = 240;
@@ -303,7 +339,7 @@ export function checkContainerBoundaries(parentID) {
   var parentRect = parent.getBoundingClientRect();
 
   let appIDs = getAppIDsInAFrame(parentID);
-  const containingRect = getContainingRectangle(appIDs);
+  const containingRect = getContainingRectangleOfApps(appIDs);
 
   const deltaX = parentRect.left - containingRect.left;
   const deltaY = parentRect.top - containingRect.top;
@@ -356,7 +392,7 @@ export function activateWindow(windowID) {
   contentProperties.update((data) => {
     data.isAWindowActive = true;
     data.activeWindow = windowID;
-    data.backgroundColor = "rgb(199, 205, 213)"
+    data.backgroundColor = "rgb(180, 180, 180)"
     return data;
   });
 }
@@ -374,7 +410,7 @@ export function deactivateWindow(windowID) {
   contentProperties.update((data) => {
     data.isAWindowActive = false;
     data.activeWindow = "";
-    data.backgroundColor = "rgb(245, 252, 255)";
+    data.backgroundColor = "rgb(245, 245, 245)";
     return data;
   });
 }

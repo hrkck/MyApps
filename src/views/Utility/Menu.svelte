@@ -7,6 +7,8 @@
   import Settings from "./Settings.svelte";
   let isSettingsOpen = writable($contentProperties.isAWindowActive == "settings");
   // export let applications;
+
+
 </script>
 
 <div id="header">

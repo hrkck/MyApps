@@ -1,7 +1,7 @@
 <!-- @migration-task Error while migrating Svelte code: Can't migrate code with beforeUpdate. Please migrate by hand. -->
 <!-- AppWindow.svelte -->
 <script>
-  import { beforeUpdate, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { applications } from "../../scripts/applicationsList";
   import { contentProperties, removeWindowStore, windowStores } from "../../scripts/storage";
   import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
@@ -9,12 +9,13 @@
   import AppPreview from "./AppPreview.svelte";
   import { user } from "../../scripts/initGun";
 
-  export let uniqueID;
+  let { uniqueID } = $props();
   let draggableComponent; // ref to draggable component
   const store = $windowStores[uniqueID];
-  let appComponent = null; // Will hold the dynamically loaded component
-  let isLoading = false; // Flag to indicate if the component is loading
-  let loadError = null; // To capture any loading errors
+  let selected = $state(false);
+  let appComponent =  $state(null); // Will hold the dynamically loaded component
+  let isLoading =  $state(false); // Flag to indicate if the component is loading
+  let loadError = $state(null); // To capture any loading errors
 
   const isLinkApp = uniqueID.split("-")[0] == "linkApp";
 
@@ -78,7 +79,8 @@
     removeWindowStore(uniqueID);
   }
 
-  let showIcon = true;
+  let showIcon = $state(true);
+  
   function checkShowIcon() {
     // Set showIcon based on the scale
     showIcon =
@@ -119,7 +121,7 @@
   }
 
 
-  beforeUpdate(() => {
+  $effect(() => {
     checkShowIcon();
     if (!showIcon && !appComponent && !isLoading) {
       loadAppComponent();

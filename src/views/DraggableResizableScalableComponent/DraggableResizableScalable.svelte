@@ -3,10 +3,11 @@
   import { stopPropagation } from "svelte/legacy";
 
   import { user } from "../../scripts/initGun";
-  import { contentProperties, contextMenu, windowStores } from "../../scripts/storage";
+  import { contentProperties, contextMenu, isDraggingSelect, windowStores } from "../../scripts/storage";
   import { getTooltipScreenPosition, throttle } from "../../scripts/utils";
   import { scale } from "svelte/transition";
   import ResizeIndicator from "../Utility/ResizeIndicator.svelte";
+    import { get } from "svelte/store";
 
   /**
    * @typedef {Object} Props
@@ -52,7 +53,7 @@
     let lastTouchX, lastTouchY; // Track the last touch positions
 
     const onMove = throttle((event) => {
-      if (resizing) return;
+      if (resizing || $isDraggingSelect) return;
       event.preventDefault();
       isDragging = true;
 
@@ -157,7 +158,7 @@
     grabber = true;
   }
   function resize(element) {
-    if (!$store.resizable) return;
+    if (!$store.resizable || $isDraggingSelect) return;
     const grabbers = [];
 
     function createGrabber(direction, name) {
@@ -320,7 +321,7 @@
     }
 
     function onMouseWheel(event) {
-      if (isScaling || isDragging || resizing) return;
+      if (isScaling || isDragging || resizing || $isDraggingSelect) return;
       event.preventDefault();
       const wheel = event.deltaY < 0 ? 1 : -1;
       const zoom = Math.exp(wheel * scaleStep);
@@ -510,7 +511,7 @@
   width: {$store.width}px;
   height: {$store.height}px;
   z-index: {$store.zIndex};
-  outline: {$contentProperties.activeWindow === uniqueID ? '10px double green' : 'none'};"
+  outline: {$contentProperties.activeWindow === uniqueID ? '10px double green' : $store.selected ? '5px solid red' : 'none' };"
   use:draggable
   use:resize
   use:scalability

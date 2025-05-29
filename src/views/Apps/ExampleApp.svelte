@@ -63,22 +63,22 @@
   <br />
   <p>Time: {currentTime}</p>
 
-  <hr />
+  <hr/>
 
-  <div class="p-4 bg-gray-100 rounded shadow">
-    <h2 class="text-xl font-bold">🕒 Current Time Sync</h2>
+  <div>
+    <h2 >🕒 Current Time Sync</h2>
 
     <p>Last synced time: {new Date(currentTime).toLocaleTimeString()}</p>
     <p>⏱ Peer response time: {responseTime} ms</p>
     <p>🌍 Peers count: {peerCount}</p>
 
-    <ul class="mt-2 list-disc list-inside text-sm">
+    <ul>
       {#each Array.from(peerList) as peer}
         <li>{peer}</li>
       {/each}
     </ul>
 
-    <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded" onclick={updateTime}>
+    <button onclick={updateTime}>
       Update Time
     </button>
 

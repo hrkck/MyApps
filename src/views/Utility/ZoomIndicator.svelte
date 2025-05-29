@@ -10,7 +10,7 @@
    */
 
   /** @type {Props} */
-  let {width, height, mainContent = false } = $props();
+  let {width, height} = $props();
 
   let visible = $state(false);
   let timeout;
@@ -27,7 +27,7 @@
   }
 </script>
 
-<div class="zoom-indicator" class:visible style="top: {mainContent ?  10 : 25}px; left: {mainContent ?  10 : 150}px;  scale: {mainContent ? 1 : 1 / $contentProperties.scale}">
+<div class="zoom-indicator" class:visible style="top: 1%; left: 1%;">
   {width} x {height}
 </div>
 

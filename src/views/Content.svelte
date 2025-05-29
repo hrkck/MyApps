@@ -1,13 +1,14 @@
 <!-- Content.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { initGunDB, initUser, user } from "../scripts/initGun";
+  import { initGunDB} from "../scripts/initGun";
   import AppWindow from "./Apps/AppWindow.svelte";
   import Frame from "./Apps/Frame.svelte";
   import DraggableResizable from "./DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
-  import { deactivateWindow, getAppIDsInAFrame, getContainingRectangle } from "../scripts/utils";
+  import { deactivateWindow, frameApps, getAppIDsInAFrame, getContainingRectangleOfApps } from "../scripts/utils";
   import ZoomIndicator from "./Utility/ZoomIndicator.svelte";
+    import { get } from "svelte/store";
 
   let zoomIndicatorRef;
 
@@ -60,41 +61,26 @@
 
   // Reset Workspace Position
   function resetWorkspacePosition() {
-    let appIDs = getAppIDsInAFrame("mainContent");
-    const rect = getContainingRectangle(appIDs, 50); // Assuming padding is 50
-
-    if (rect.left === Infinity || rect.top === Infinity) {
-      $contentProperties.scale = 1;
-      $contentProperties.x = window.innerWidth / 2;
-      $contentProperties.y = window.innerHeight / 2;
-      return;
-    }
-
-    rect.width = rect.right - rect.left;
-    rect.height = rect.bottom - rect.top;
-
-    // Calculate the scale factor to fit the entire rectangle in the view
-    const scaleX = window.innerWidth / rect.width;
-    const scaleY = window.innerHeight / rect.height;
-    const scale = Math.min(scaleX, scaleY);
-
-    // Calculate the center of the containing rectangle
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    // Calculate the new content position to center the view on the containing rectangle
-    $contentProperties.scale = scale;
-    $contentProperties.x = window.innerWidth / 2 - centerX * scale;
-    $contentProperties.y = window.innerHeight / 2 - centerY * scale;
-
+    frameApps(Object.keys($windowStores).filter((id) => id !== "mainContent"));
     // Deactivate any active window
     deactivateWindow($contentProperties.activeWindow);
   }
 
   function handleKeyPress(event) {
-    if (event.key === "Home" || event.code === "Home") {
-      console.log("home presses");
-      resetWorkspacePosition();
+    if ($contentProperties.isAWindowActive) {
+       if (event.key === "Escape") {
+        console.log("ESC presses");
+        deactivateWindow($contentProperties.activeWindow);
+      }
+    }else {
+      if (event.key === "Home" || event.code === "Home") {
+        console.log("home presses");
+        resetWorkspacePosition();
+      } 
+      else if (event.key === "f" || event.code === "KeyF") {
+        console.log("F presses");
+        resetWorkspacePosition();
+      } 
     }
   }
 
@@ -108,7 +94,7 @@
     await initGunDB();
   });
   let storeMap = $derived($windowStores);
-  let  windowKeys = $derived(Object.keys($contentProperties.windowList));
+  let windowKeys = $derived(Object.keys($contentProperties.windowList));
 </script>
 
 <svelte:window onkeydown={handleKeyPress} onclick={draggableFunctions.clickFunc} />
@@ -122,7 +108,7 @@
 >
   <div id="content">
     {#if windowKeys.length === 0}
-      <p>Loading windows...</p>
+      <p></p>
     {:else}
       {#each windowKeys as uniqueID (uniqueID)}
         {#if isFrame(uniqueID)}

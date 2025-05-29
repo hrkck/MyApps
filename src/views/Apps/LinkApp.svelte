@@ -7,7 +7,7 @@
 
   let { uniqueID } = $props();
   const mainAppStore = $windowStores[uniqueID];
-  console.log('HELOOOO');
+
   const linkData = writable({
     linkUrl: $mainAppStore.linkUrl || "",
     iconUrl: $mainAppStore.iconUrl || "",
@@ -39,7 +39,6 @@
   }
 
   onMount(async () => {
-    console.log($linkData.linkUrl);
     updateImageUrl();
     initData();
   });
