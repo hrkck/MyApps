@@ -5,8 +5,7 @@
   import ContextMenu from "./views/Utility/ContextMenu/ContextMenu.svelte";
   import Menu from "./views/Utility/Menu.svelte";
   import { contentProperties, contextMenu } from "./scripts/storage";
-    import SelectApplication from "./views/Utility/SelectApplication.svelte";
-    import DragSelect from "./views/Utility/DragSelect.svelte";
+  import DragSelect from "./views/Utility/DragSelect.svelte";
 
   // Context Menu management
 
@@ -23,20 +22,24 @@
     $contextMenu.originalTargetID = event.srcElement.id || event.originalTarget.id;
   }
 
-  function trackMousePosition(event){
+  function trackMousePosition(event) {
     $contentProperties.mouseX = event.clientX;
     $contentProperties.mouseY = event.clientY;
   }
 </script>
 
-<svelte:window oncontextmenu={showContextMenu} onmousemove={trackMousePosition} ondragover={trackMousePosition}/>
+<svelte:window
+  oncontextmenu={showContextMenu}
+  onmousemove={trackMousePosition}
+  ondragover={trackMousePosition}
+/>
 
 <main id="app">
   <Content />
   <Background store={contentProperties} />
 
   <!-- Add App Selection -->
-   <DragSelect></DragSelect>
+  <DragSelect></DragSelect>
 
   <!-- right click context menu for adding apps, app groups, reset storage etc. -->
   {#if $contextMenu.visible}

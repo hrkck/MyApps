@@ -68,17 +68,24 @@ export const applications = [
     ...AppProperties,
   },
   {
-    id: 5, // Changed ID to 5 to avoid duplicate IDs
+    id: 5,
     name: "exampleApp",
     title: "Example App",
     component: () => import("../views/Apps/ExampleApp.svelte"),
     ...AppProperties,
   },
   {
-    id: 6, // Changed ID to 5 to avoid duplicate IDs
+    id: 6, 
     name: "farketmezApp",
     title: "Farketmez",
     component: () => import("../views/Apps/Farketmez.svelte"),
+    ...AppProperties,
+  },
+  {
+    id: 7, 
+    name: "emptyApp",
+    title: "Empty App",
+    component: () => import("../views/Apps/EmptyApp.svelte"),
     ...AppProperties,
   },
   // ... add other applications;

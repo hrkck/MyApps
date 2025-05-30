@@ -42,7 +42,7 @@
     $isSettingsOpen ? createOverlay() : destroyOverlay();
     $contentProperties.isAWindowActive = $isSettingsOpen ? "settings" : false;
     if (!$isSettingsOpen) {
-      deactivateWindow($contentProperties.activeWindow);
+      deactivateWindow();
     }
     document.activeElement.blur();
   }
@@ -84,7 +84,7 @@
       if ($isSettingsOpen) {
         handleToggleSettings(event);
         if ($contentProperties.isAWindowActivated) {
-          deactivateWindow($contentProperties.activeWindow);
+          deactivateWindow();
         }
       }
     }

@@ -68,21 +68,19 @@
   imageAppStore.set(imageAppStoreProps);
   imageAppStoreRef.put(imageAppStoreProps);
 
-  // update active state across relevant components:
-  $effect(() => {
-    // make each image also active when main app is active
-    $imageAppStore.isActiveDraggable = $mainAppStore.isActive;
+  const unsubMainAppStore = mainAppStore.subscribe((mainAppStoreData) => {
+    $imageAppStore.isActiveDraggable = mainAppStoreData.isActive;
     images.forEach((imgObj) => {
       let { imageUrl, key, imageStore } = imgObj;
       imageStore.update((data) => {
-        data.isActiveDraggable = $mainAppStore.isActive;
+        data.isActiveDraggable = mainAppStoreData.isActive;
         return data;
       });
     });
     texts.forEach((txtObj) => {
       let { key, textStore } = txtObj;
       textStore.update((data) => {
-        data.isActiveDraggable = $mainAppStore.isActive;
+        data.isActiveDraggable = mainAppStoreData.isActive;
         return data;
       });
     });
@@ -96,6 +94,7 @@
 
   onDestroy(() => {
     document.removeEventListener("paste", pasteListener, true);
+    unsubMainAppStore();
   });
 
   async function initializeAppData() {

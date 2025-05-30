@@ -397,22 +397,26 @@ export function activateWindow(windowID) {
   });
 }
 
-export function deactivateWindow(windowID) {
-  if (windowID == "") {
-    return;
-  };
-  let activeAppStore = get(windowStores)[windowID];
-  activeAppStore.update((data) => {
-    data.isActive = false;
-    return data;
-  });
-  user.get("windows").get(windowID).put({ isActive: false });
+export function deactivateWindow() {
+  // find which app is active
+  const windowID = get(contentProperties).activeWindow;
+  // reset content data
   contentProperties.update((data) => {
     data.isAWindowActive = false;
     data.activeWindow = "";
     data.backgroundColor = "rgb(245, 245, 245)";
     return data;
   });
+  if (windowID == "" || windowID == undefined) {
+    return;
+  };
+  // deactivate that app
+  let activeAppStore = get(windowStores)[windowID];
+  activeAppStore.update((data) => {
+    data.isActive = false;
+    return data;
+  });
+  user.get("windows").get(windowID).put({ isActive: false });
   document.activeElement.blur();
 }
 

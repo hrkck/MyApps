@@ -93,7 +93,7 @@
     }
     // first if a window is active, deactivate it
     if ($contentProperties.isAWindowActivated) {
-      deactivateWindow($contentProperties.activeWindow);
+      deactivateWindow();
     }
   }
 

@@ -50,7 +50,7 @@
       if ($contentProperties.isAWindowActive == "settings") {
         return;
       } else if ($contentProperties.isAWindowActive) {
-        deactivateWindow($contentProperties.activeWindow);
+        deactivateWindow();
       }
 
       if ($contextMenu.visible) {
@@ -63,14 +63,14 @@
   function resetWorkspacePosition() {
     frameApps(Object.keys($windowStores).filter((id) => id !== "mainContent"));
     // Deactivate any active window
-    deactivateWindow($contentProperties.activeWindow);
+    deactivateWindow();
   }
 
   function handleKeyPress(event) {
     if ($contentProperties.isAWindowActive) {
        if (event.key === "Escape") {
         console.log("ESC presses");
-        deactivateWindow($contentProperties.activeWindow);
+        deactivateWindow();
       }
     }else {
       if (event.key === "Home" || event.code === "Home") {

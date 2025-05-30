@@ -1,13 +1,10 @@
 <!--  DraggabkeResizable.svelte -->
 <script>
   import { stopPropagation } from "svelte/legacy";
-
   import { user } from "../../scripts/initGun";
   import { contentProperties, contextMenu, isDraggingSelect, windowStores } from "../../scripts/storage";
   import { getTooltipScreenPosition, throttle } from "../../scripts/utils";
-  import { scale } from "svelte/transition";
   import ResizeIndicator from "../Utility/ResizeIndicator.svelte";
-    import { get } from "svelte/store";
 
   /**
    * @typedef {Object} Props
@@ -53,6 +50,7 @@
     let lastTouchX, lastTouchY; // Track the last touch positions
 
     const onMove = throttle((event) => {
+    // const onMove = (event) => {
       if (resizing || $isDraggingSelect) return;
       event.preventDefault();
       isDragging = true;
@@ -76,7 +74,8 @@
         $store.y += dy / $store.contentScale;
       }
       dragMoveFunc(store, event, dx / $store.contentScale || 0, dy / $store.contentScale || 0);
-    }, 8);
+    }
+    , 8);
 
     function onStart(event) {
       if (
@@ -300,7 +299,7 @@
   // #################################################### //
   // zoom functionality
   // https://stackoverflow.com/a/3151987
-  const scaleStep = 0.05; // Adjust the scaling step for smoother zoom
+  const scaleStep = 0.15; // Adjust the scaling step for smoother zoom
   function scalability(node) {
     if (!$store.scalable) return;
 
