@@ -489,44 +489,107 @@
 
   async function handleMultipleImages(imageDataUrls, mouseX, mouseY) {
     const images = await Promise.all(imageDataUrls.map(getImageDimensions));
+    images.sort((a, b) => b.width - a.width); // Largest images first
 
-    // Sort by width descending
-    images.sort((a, b) => b.width - a.width);
-
-    // Get transformed base position in workspace coordinates
     const rect = draggableAreaElement.getBoundingClientRect();
     const originX =
       ((mouseX - rect.left - window.scrollX) / $contentProperties.scale - $imageAppStore.x) /
       $imageAppStore.scale;
-
     const originY =
       ((mouseY - rect.top - window.scrollY) / $contentProperties.scale - $imageAppStore.y) /
       $imageAppStore.scale;
 
-    // Layout loop
-    let offsetX = 0;
-    let offsetY = 0;
-    let rowHeight = 0;
+    // Define initial bin size (large enough to contain all images roughly in a square)
+    const totalArea = images.reduce((sum, img) => sum + img.width * img.height, 0);
+    let binSize = Math.ceil(Math.sqrt(totalArea)) + IMAGE_GAP * 2;
 
-    let imgPositions = [];
-    const MAX_ROW_WIDTH = IMAGE_GAP * 2 + Math.max(...images.map((img) => img.width)) * 4;
-    for (const img of images) {
-      if (offsetX + img.width > MAX_ROW_WIDTH) {
-        offsetX = 0;
-        offsetY += rowHeight + IMAGE_GAP;
-        rowHeight = 0;
+    const freeRects = [{ x: 0, y: 0, width: binSize, height: binSize }];
+    const imgPositions = [];
+
+    function findAndPlace(img) {
+      let bestFitIndex = -1;
+      let bestScore = Infinity;
+
+      for (let i = 0; i < freeRects.length; i++) {
+        const rect = freeRects[i];
+        if (img.width <= rect.width && img.height <= rect.height) {
+          const score = rect.width * rect.height - img.width * img.height;
+          if (score < bestScore) {
+            bestScore = score;
+            bestFitIndex = i;
+          }
+        }
       }
 
-      const finalX = originX + offsetX;
-      const finalY = originY + offsetY;
+      if (bestFitIndex === -1) {
+        console.warn("Expanding bin to place image:", img);
+        const extraSpace = Math.max(img.width, img.height) + IMAGE_GAP;
+        freeRects.push({
+          x: binSize,
+          y: 0,
+          width: extraSpace,
+          height: binSize,
+        });
+        freeRects.push({
+          x: 0,
+          y: binSize,
+          width: binSize + extraSpace,
+          height: extraSpace,
+        });
+        binSize += extraSpace;
+
+        // Retry once
+        return findAndPlace(img);
+      }
+
+      const target = freeRects.splice(bestFitIndex, 1)[0];
+
+      const placed = {
+        x: target.x,
+        y: target.y,
+        width: img.width,
+        height: img.height,
+      };
+
+      // Split free space: right and bottom
+      const newRects = [];
+
+      // Right rectangle
+      if (target.width > img.width) {
+        newRects.push({
+          x: target.x + img.width + IMAGE_GAP,
+          y: target.y,
+          width: target.width - img.width - IMAGE_GAP,
+          height: img.height,
+        });
+      }
+
+      // Bottom rectangle
+      if (target.height > img.height) {
+        newRects.push({
+          x: target.x,
+          y: target.y + img.height + IMAGE_GAP,
+          width: target.width,
+          height: target.height - img.height - IMAGE_GAP,
+        });
+      }
+
+      freeRects.push(...newRects);
+      return placed;
+    }
+
+    for (const img of images) {
+      const placed = findAndPlace(img);
+      if (!placed) continue;
+
+      const finalX = originX + placed.x;
+      const finalY = originY + placed.y;
 
       handleImageData(img.dataUrl, finalX, finalY);
       imgPositions.push({ x: finalX, y: finalY, width: img.width, height: img.height });
-
-      offsetX += img.width + IMAGE_GAP;
-      rowHeight = Math.max(rowHeight, img.height);
     }
-    if (images.length > 1) {
+
+    if (imgPositions.length > 1) {
       containViewToImages(
         imgPositions,
         imageAppStore,
