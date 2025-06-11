@@ -50,7 +50,7 @@ export let contentProperties = getLocalStorage("mainContent", {
   contentScale: 1,
   backgroundColor: "rgb(245, 245, 245)",
   isInsideFrameID: "",
-  zIndex: 1,
+  zIndex: 2,
   windowList: {},
   selectedWindows: [],
   isAWindowActive: false,

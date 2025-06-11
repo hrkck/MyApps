@@ -24,7 +24,7 @@
       width: "100vw",
       height: "100vh",
       backgroundColor: "rgba(180, 180, 180, 0.3)", // semi-transparent
-      zIndex: "500",
+      zIndex: "1000",
       pointerEvents: "none", // optional: allows clicks to pass through
     });
     document.body.appendChild(overlay);
@@ -150,7 +150,7 @@
 
 <style>
   #gear-button-container {
-    z-index: 1000;
+    z-index: 1001;
   }
   .gear-button {
     height: 30px;
@@ -166,11 +166,11 @@
     height: 100vh;
     padding: 20px;
     background-color: rgba(255, 255, 255, 0);
-    z-index: 0;
+    /* z-index: 0; */
     pointer-events: none;
   }
   #settings-window {
-    z-index: 501;
+    z-index: 1002;
     display: flex;
     position: relative;
     vertical-align: middle;

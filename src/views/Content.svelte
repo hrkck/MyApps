@@ -1,16 +1,23 @@
 <!-- Content.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { initGunDB} from "../scripts/initGun";
+  import { initGunDB } from "../scripts/initGun";
   import AppWindow from "./Apps/AppWindow.svelte";
   import Frame from "./Apps/Frame.svelte";
   import DraggableResizable from "./DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
-  import { deactivateWindow, frameApps, getAppIDsInAFrame, getContainingRectangleOfApps } from "../scripts/utils";
+  import { deactivateWindow, frameApps } from "../scripts/utils";
   import ZoomIndicator from "./Utility/ZoomIndicator.svelte";
-    import { get } from "svelte/store";
 
   let zoomIndicatorRef;
+
+  let pressedThis = false;
+
+  function onPointerDown(e) {
+    if (e.target.id == "mainContent-background") {
+      pressedThis = true;
+    }
+  }
 
   const draggableFunctions = {
     dragStartFunc: function (store, event, x, y) {
@@ -46,6 +53,8 @@
       });
     },
     clickFunc: function (store, event) {
+      if (!pressedThis) return;
+      pressedThis = false; // reset after handling
       // deactivate any active app
       if ($contentProperties.isAWindowActive == "settings") {
         return;
@@ -68,19 +77,18 @@
 
   function handleKeyPress(event) {
     if ($contentProperties.isAWindowActive) {
-       if (event.key === "Escape") {
+      if (event.key === "Escape") {
         console.log("ESC presses");
         deactivateWindow();
       }
-    }else {
+    } else {
       if (event.key === "Home" || event.code === "Home") {
         console.log("home presses");
         resetWorkspacePosition();
-      } 
-      else if (event.key === "f" || event.code === "KeyF") {
+      } else if (event.key === "f" || event.code === "KeyF") {
         console.log("F presses");
         resetWorkspacePosition();
-      } 
+      }
     }
   }
 
@@ -97,7 +105,11 @@
   let windowKeys = $derived(Object.keys($contentProperties.windowList));
 </script>
 
-<svelte:window onkeydown={handleKeyPress} onclick={draggableFunctions.clickFunc} />
+<svelte:window
+  onkeydown={handleKeyPress}
+  onclick={draggableFunctions.clickFunc}
+  onpointerdown={onPointerDown}
+/>
 
 <ZoomIndicator bind:this={zoomIndicatorRef} mainContent={true} />
 
@@ -125,8 +137,11 @@
   #content {
     position: absolute;
     backface-visibility: hidden;
+    background-color: transparent;
     /* background-color: #7fffd43b; */
     /* height: ; */
     /* width: fit-content !important; */
+    /* width: 100vw;
+    height: 100vh; */
   }
 </style>

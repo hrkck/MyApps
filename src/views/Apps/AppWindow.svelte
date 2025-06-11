@@ -8,6 +8,7 @@
   import { activateWindow, checkBoundaries, getAppIDsInAFrame } from "../../scripts/utils";
   import AppPreview from "./AppPreview.svelte";
   import { user } from "../../scripts/initGun";
+    import { get } from "svelte/store";
 
   let { uniqueID } = $props();
   let draggableComponent; // ref to draggable component
@@ -67,6 +68,16 @@
     scaleFunc: function () {},
     clickFunc: function (store, event) {
       // console.log("clicked on window, ", uniqueID);
+      // increase here store.update((d) => {d.zIndex +=1; return data})
+      // in a way where images will pop top when clicked, cycle in low number of zindex
+
+      for (const [id, winStore] of Object.entries($windowStores)) {
+        winStore.update(data => {
+          data.zIndex = id === uniqueID ? 202 : 201;
+          return data;
+        });
+      }
+
     },
     dbclickFunc: function (store, event) {
       if (!$contentProperties.isAWindowActive && !showIcon) {

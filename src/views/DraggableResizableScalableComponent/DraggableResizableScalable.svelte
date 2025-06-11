@@ -2,7 +2,12 @@
 <script>
   import { stopPropagation } from "svelte/legacy";
   import { user } from "../../scripts/initGun";
-  import { contentProperties, contextMenu, isDraggingSelect, windowStores } from "../../scripts/storage";
+  import {
+    contentProperties,
+    contextMenu,
+    isDraggingSelect,
+    windowStores,
+  } from "../../scripts/storage";
   import { getTooltipScreenPosition, throttle } from "../../scripts/utils";
   import ResizeIndicator from "../Utility/ResizeIndicator.svelte";
 
@@ -49,8 +54,8 @@
   function draggable(node) {
     let lastTouchX, lastTouchY; // Track the last touch positions
 
-    const onMove = throttle((event) => {
-    // const onMove = (event) => {
+    const onMove = (event) => {
+      // const onMove = (event) => {
       if (resizing || $isDraggingSelect) return;
       event.preventDefault();
       isDragging = true;
@@ -75,7 +80,6 @@
       }
       dragMoveFunc(store, event, dx / $store.contentScale || 0, dy / $store.contentScale || 0);
     }
-    , 8);
 
     function onStart(event) {
       if (
@@ -100,7 +104,7 @@
     }
 
     function onEnd(event) {
-      onMove.cancel?.();
+      // onMove.cancel?.();
       isDragging = false;
       lastTouchX = undefined;
       lastTouchY = undefined;
@@ -112,10 +116,12 @@
       dragEndFunc(store, event, $store.x, $store.y);
     }
 
+    const throttleLimit = 33; // ~30fps
+
+    // Throttle high-frequency move handlers
+    const throttledOnMove = throttle(onMove, throttleLimit);
+
     let target;
-    // console.log($store);
-    // console.log(target);
-    // console.log(node);
     switch ($store.dragEventTarget) {
       case "window":
         target = window;
@@ -125,22 +131,29 @@
         break;
       default:
         target = document.getElementById($store.dragEventTarget);
-        // otherwise clikcing on element results in no dragging
-        $store.width = 0;
-        node.style.minWidth = 0;
+        // Fallback behavior for invalid target
+        // $store.width = 0;
+        // node.style.minWidth = 0;
         break;
     }
 
+    // Start events
     target.addEventListener("mousedown", onStart);
     target.addEventListener("touchstart", onStart, { passive: false });
+
+    // Move and end events should use throttled handler
+    // window.addEventListener("mousemove", throttledOnMove);
+    // window.addEventListener("mouseup", onEnd);
+    // window.addEventListener("touchmove", throttledOnMove);
+    // window.addEventListener("touchend", onEnd);
 
     return {
       destroy() {
         target.removeEventListener("mousedown", onStart);
         target.removeEventListener("touchstart", onStart);
-        target.removeEventListener("mousemove", onMove);
+        target.removeEventListener("mousemove", throttledOnMove);
         target.removeEventListener("mouseup", onEnd);
-        target.removeEventListener("touchmove", onMove);
+        target.removeEventListener("touchmove", throttledOnMove);
         target.removeEventListener("touchend", onEnd);
       },
     };
@@ -152,7 +165,7 @@
   let grabber = false;
   let aspectRatio = $store.width / $store.height;
   let grabberSize = $state(10);
-  
+
   if ($store.showGrabbers) {
     grabber = true;
   }
@@ -299,7 +312,7 @@
   // #################################################### //
   // zoom functionality
   // https://stackoverflow.com/a/3151987
-  const scaleStep = 0.15; // Adjust the scaling step for smoother zoom
+  const scaleStep = 0.2; // Adjust the scaling step for smoother zoom
   function scalability(node) {
     if (!$store.scalable) return;
 
@@ -372,7 +385,7 @@
     }
 
     // Define the throttle limit in fps
-    const throttleLimit = 16;
+    const throttleLimit = 33;
 
     // Create throttled versions of the high-frequency event handlers
     const throttledMouseWheel = throttle(onMouseWheel, throttleLimit);
@@ -503,14 +516,20 @@
   class="draggable resizable"
   class:box-shadow={$store.boxShadow}
   style="
-  --grabber-size: {(10 / $contentProperties.scale) / ($mainAppStore === undefined ? 1 : $mainAppStore?.scale)}px;
+  --grabber-size: {10 /
+    $contentProperties.scale /
+    ($mainAppStore === undefined ? 1 : $mainAppStore?.scale)}px;
   transform: scale({$store.scale}); 
   left: {$store.x}px; 
   top: {$store.y}px; 
   width: {$store.width}px;
   height: {$store.height}px;
   z-index: {$store.zIndex};
-  outline: {$contentProperties.activeWindow === uniqueID ? '10px double green' : $store.selected ? '5px solid red' : 'none' };"
+  outline: {$contentProperties.activeWindow === uniqueID
+    ? '10px double green'
+    : $store.selected
+      ? '5px solid red'
+      : 'none'};"
   use:draggable
   use:resize
   use:scalability
@@ -523,8 +542,6 @@
 <style>
   .draggable {
     position: absolute;
-    min-height: 80px;
-    min-width: 80px;
     transform-origin: 0 0;
     touch-action: none; /*improve touch interactions*/
     user-select: none;

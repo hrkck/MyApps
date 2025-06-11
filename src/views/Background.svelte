@@ -23,6 +23,7 @@
     height: 100%;
     padding: 0;
     margin: 0;
+    z-index: 1;
     /* background: rgb(235, 232, 247); */
     background-image: radial-gradient(black 1px, transparent 0);
     overflow: hidden;

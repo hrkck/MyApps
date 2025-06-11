@@ -57,8 +57,8 @@
     hideHeaderResize: true,
     x: 0,
     y: 0,
-    width: 320,
-    height: 240,
+    width: 0,
+    height: 0,
     contentScale: 1,
     scale: 1,
     zIndex: 2,
@@ -188,44 +188,109 @@
     });
 
     // Initialize texts from GunDB
-    let textStoresData = [];
-    let blocks = [];
-    user
-      .get("windows")
-      .get(uniqueID)
-      .get("imageAppData")
-      .get("texts")
-      .map()
-      .get("textStoreData")
-      .once((data) => {
-        if (data) {
-          data = { ...cleanGunData(data), blocks: [] };
-          textStoresData.push({ ...data });
-        }
-      })
-      .get("blocks")
-      .map()
-      .once((block) => {
-        if (block && block.textStoreID) {
-          blocks.push(cleanGunData(block));
-        }
+    await new Promise((resolve) => {
+      user
+        .get("windows")
+        .get(uniqueID)
+        .get("imageAppData")
+        .get("texts")
+        .once(async (listOfTextKeys) => {
+          if (!listOfTextKeys || typeof listOfTextKeys !== "object") {
+            resolve();
+            return;
+          }
+          const keys = Object.keys(listOfTextKeys).filter(
+            (k) => k && !k.startsWith("_"), // ignore metadata keys
+          );
 
-        blocks = unflattenToEditorJSData(blocks);
-        for (const block of blocks) {
-          const storeData = textStoresData.find((ts) => ts.uniqueID === block.textStoreID);
-          if (storeData) {
-            storeData.blocks.push(block);
-            storeData.blocks.sort((a, b) => a.order - b.order);
-            const existing = texts.find((t) => t.key === storeData.uniqueID);
-            if (existing) {
-              existing.textStore.set(storeData); // update existing
-            } else {
-              const textStore = writable(storeData);
-              texts = [...texts, { key: storeData.uniqueID, textStore }];
+          for (const key of keys) {
+            // Step 2: Load text metadata
+            const textMeta = await new Promise((resolve) => {
+              user
+                .get("windows")
+                .get(uniqueID)
+                .get("imageAppData")
+                .get("texts")
+                .get(key)
+                .once(resolve);
+            });
+
+            if (!textMeta || textMeta.id === "d") continue;
+
+            // Step 3: Load textStoreData
+            try {
+              let blocks = [];
+
+              const storeData = await new Promise((resolve, reject) => {
+                user
+                  .get("windows")
+                  .get(uniqueID)
+                  .get("imageAppData")
+                  .get("texts")
+                  .get(key)
+                  .get("textStoreData")
+                  .once((data) => {
+                    if (data) resolve(cleanGunData(data));
+                    else reject(new Error(`No textStoreData for key: ${key}`));
+                  });
+              });
+
+              user
+                .get("windows")
+                .get(uniqueID)
+                .get("imageAppData")
+                .get("texts")
+                .get(key)
+                .get("textStoreData")
+                .get("blocks")
+                .once(async (listOfTextKeys) => {
+                  if (!listOfTextKeys || typeof listOfTextKeys !== "object") {
+                    resolve();
+                    return;
+                  }
+                  const blockKeys = Object.keys(listOfTextKeys).filter(
+                    (k) => k && !k.startsWith("_"), // ignore metadata keys
+                  );
+
+                  for (const blockKey of blockKeys) {
+                    const blockMeta = await new Promise((resolve) => {
+                      user
+                        .get("windows")
+                        .get(uniqueID)
+                        .get("imageAppData")
+                        .get("texts")
+                        .get(key)
+                        .get("textStoreData")
+                        .get("blocks")
+                        .get(blockKey)
+                        .once(resolve);
+                    });
+
+                    if (blockMeta && blockMeta.textStoreID) {
+                      blocks.push(cleanGunData(blockMeta));
+                    }
+                  }
+                  blocks = unflattenToEditorJSData(blocks);
+                  blocks.sort((a, b) => a.order - b.order);
+
+                  storeData.blocks = blocks;
+
+                  const existing = texts.find((t) => t.key === storeData.uniqueID);
+                  if (existing) {
+                    existing.textStore.set(storeData);
+                    console.log(get(existing.textStore));
+                  } else {
+                    const textStore = writable(storeData);
+                    texts.push({ key: storeData.uniqueID, textStore });
+                  }
+                });
+            } catch (error) {
+              console.error(`Error loading storeData for ${key}:`, error);
             }
           }
-        }
-      });
+          resolve();
+        });
+    });
   }
 
   const draggableFunctions = {

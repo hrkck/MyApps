@@ -15,7 +15,7 @@ const AppProperties = {
   scale: 1,
   isActive: false,
   selected: false,
-  zIndex: 11,
+  zIndex: 201,
 };
 
 const FrameProperties = {
@@ -30,7 +30,7 @@ const FrameProperties = {
   hideHeaderResize: true,
   scale: 1,
   isInsideFrameID: "-1",
-  zIndex: 2,
+  zIndex: 101,
   isActiveDraggable: false,
   isActive: false,
   selected: false,

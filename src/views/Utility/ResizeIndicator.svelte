@@ -37,7 +37,7 @@
     padding: 2px 6px;
     border-radius: 4px;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 900;
     white-space: nowrap;
   }
 </style>

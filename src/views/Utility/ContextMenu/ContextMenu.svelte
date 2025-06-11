@@ -62,7 +62,7 @@
 <style>
   .context-menu {
     border: 1px solid #ccc;
-    z-index: 1000;
+    z-index: 900;
     /* padding: 15px 0 15px 15px; */
   }
 </style>

@@ -43,7 +43,7 @@
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 900;
   }
 
   .zoom-indicator.visible {

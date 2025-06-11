@@ -102,7 +102,6 @@
     position: relative;
     width: 50%;
     height: auto;
-    z-index: 0;
   }
   .icon-link {
     width: 50%;
