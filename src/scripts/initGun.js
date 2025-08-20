@@ -16,7 +16,7 @@ export const gun = Gun({
   peers: ["wss://myapps.ideasofhakki.com/gun"],
 });
 export const SEA = Gun.SEA;
-export const user = gun.user().recall({ sessionStorage: true });
+export const user = gun.user().recall({ sessionStorage: false });
 export const username = writable('');
 
 
@@ -43,30 +43,30 @@ export async function initGunDB() {
 export const initUser = (async () => {
   // initialize user
   if (!user.is) {
-  //   const encryptedAlias = localStorage.getItem("encryptedAlias");
-  //   const encryptedPass = localStorage.getItem("encryptedPass");
-  //   const pairSerialized = localStorage.getItem("pair");
+    const encryptedAlias = localStorage.getItem("encryptedAlias");
+    const encryptedPass = localStorage.getItem("encryptedPass");
+    const pairSerialized = localStorage.getItem("pair");
 
-  //   console.log("trying to init user");
-  //   if (encryptedAlias && encryptedPass && pairSerialized) {
-  //     try {
-  //       const pair = JSON.parse(pairSerialized); // Deserialize the pair
-  //       const alias = await SEA.decrypt(encryptedAlias, pair);
-  //       const pass = await SEA.decrypt(encryptedPass, pair);
-  //       // Authenticate
-  //       user.auth(alias, pass, (ack) => {
-  //         if (ack.err) {
-  //           console.error("Error re-authenticating:", ack.err);
-  //         } else {
-  //           console.log("Re-authenticated successfully using stored credentials");
-  //           // console.log(user.is ? true : false);
-  //           initGunDB();
-  //         }
-  //       });
-  //     } catch (error) {
-  //       console.error("Decryption error:", error);
-  //     }
-  //   } else {
+    console.log("trying to init user");
+    if (encryptedAlias && encryptedPass && pairSerialized) {
+      try {
+        const pair = JSON.parse(pairSerialized); // Deserialize the pair
+        const alias = await SEA.decrypt(encryptedAlias, pair);
+        const pass = await SEA.decrypt(encryptedPass, pair);
+        // Authenticate
+        user.auth(alias, pass, (ack) => {
+          if (ack.err) {
+            console.error("Error re-authenticating:", ack.err);
+          } else {
+            console.log("Re-authenticated successfully using stored credentials");
+            // console.log(user.is ? true : false);
+            initGunDB();
+          }
+        });
+      } catch (error) {
+        console.error("Decryption error:", error);
+      }
+    } else {
       // Generate new credentials and key pair
       const alias = generateRandomUsername();
       const pass = generateRandomPassword();
@@ -97,7 +97,7 @@ export const initUser = (async () => {
           });
         }
       });
-    // }
+    }
   } else {
     console.log("User is already authenticated.");
   }
