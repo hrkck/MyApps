@@ -68,6 +68,13 @@ export const applications = [
     ...AppProperties,
   },
   {
+    id: 8,
+    name: "timeApp",
+    title: "Time App",
+    component: () => import("../views/Apps/TimeApp.svelte"),
+    ...AppProperties,
+  },
+  {
     id: 5,
     name: "exampleApp",
     title: "Example App",
@@ -75,14 +82,14 @@ export const applications = [
     ...AppProperties,
   },
   {
-    id: 6, 
+    id: 6,
     name: "farketmezApp",
     title: "Farketmez",
     component: () => import("../views/Apps/Farketmez.svelte"),
     ...AppProperties,
   },
   {
-    id: 7, 
+    id: 7,
     name: "emptyApp",
     title: "Empty App",
     component: () => import("../views/Apps/EmptyApp.svelte"),
