@@ -1,7 +1,7 @@
 <!-- LinkApp.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { getLocalStorage, windowStores } from "../../scripts/storage";
+  import { windowStores } from "../../scripts/storage";
   import { writable } from "svelte/store";
   import { user } from "../../scripts/initGun";
   import { cleanGunData } from "../../scripts/utils";
@@ -9,14 +9,13 @@
   let { uniqueID } = $props();
   const mainAppStore = $windowStores[uniqueID];
 
-  let linkInput = $state("");
   const linkData = writable({
     linkUrl: $mainAppStore.linkUrl || "",
     iconUrl: $mainAppStore.iconUrl || "",
   });
 
   function updateImageUrl() {
-    let inputUrl = linkInput.trim();
+    let inputUrl = $linkData.linkUrl.trim();
     // Regular expression to match URLs starting with www. or having .com at the end
     const urlRegex = /^(?:(?:https?|ftp):\/\/)?(?:\w+\.)*[\w-]+\.[\w]{2,}(?:\.[\w]{2})?\/?$/i;
 
@@ -61,7 +60,7 @@
 
 <div class="container ghost-slate" id={$mainAppStore.uniqueID + "-linkApp"}>
   <label for="url">Enter URL:</label>
-  <input type="text" id="url" bind:value={linkInput} oninput={updateImageUrl} />
+  <input type="text" id="url" bind:value={$linkData.linkUrl} oninput={updateImageUrl} />
 
   {#if $linkData.iconUrl !== ""}
     <div class="favicon-container">
