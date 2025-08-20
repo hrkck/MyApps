@@ -6,7 +6,7 @@
   import { writable } from "svelte/store";
   import { contentProperties, resetLocalStorage } from "../../scripts/storage";
   import Login from "./Login.svelte";
-  import { deactivateWindow } from "../../scripts/utils";
+  import { deactivateWindows } from "../../scripts/utils";
   import SEA from "gun/sea";
   import ConfirmDialog from "./ConfirmDialog.svelte";
   import { customConfirm, handleConfirmResponse, message, visible } from "../../scripts/confirm";
@@ -40,9 +40,13 @@
   export function handleToggleSettings(e) {
     $isSettingsOpen = !$isSettingsOpen;
     $isSettingsOpen ? createOverlay() : destroyOverlay();
-    $contentProperties.isAWindowActive = $isSettingsOpen ? "settings" : false;
+
+    contentProperties.update((data) => {
+      data.isAWindowActive = $isSettingsOpen ? "settings" : false;
+      return data;
+    });
     if (!$isSettingsOpen) {
-      deactivateWindow();
+      deactivateWindows();
     }
     document.activeElement.blur();
   }
@@ -84,7 +88,7 @@
       if ($isSettingsOpen) {
         handleToggleSettings(event);
         if ($contentProperties.isAWindowActivated) {
-          deactivateWindow();
+          deactivateWindows();
         }
       }
     }

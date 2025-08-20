@@ -58,7 +58,6 @@
       // const onMove = (event) => {
       if (resizing || $isDraggingSelect) return;
       event.preventDefault();
-      isDragging = true;
 
       let dx, dy;
       if (event.type === "mousemove") {
@@ -75,11 +74,14 @@
         lastTouchY = currentTouchY;
       }
       if (dx !== undefined && dy !== undefined) {
-        $store.x += dx / $store.contentScale;
-        $store.y += dy / $store.contentScale;
+        store.update((data) => {
+          data.x += dx / $store.contentScale;
+          data.y += dy / $store.contentScale;
+          return data;
+        });
       }
       dragMoveFunc(store, event, dx / $store.contentScale || 0, dy / $store.contentScale || 0);
-    }
+    };
 
     function onStart(event) {
       if (
@@ -89,6 +91,8 @@
       )
         return;
       event.stopPropagation();
+
+      isDragging = true;
 
       if (event.touches) {
         lastTouchX = event.touches[0].clientX;
@@ -138,8 +142,12 @@
     }
 
     // Start events
-    target.addEventListener("mousedown", onStart);
-    target.addEventListener("touchstart", onStart, { passive: false });
+    // target.addEventListener("mousedown", onStart);
+    // target.addEventListener("touchstart", onStart, { passive: false });
+
+    target.addEventListener("pointerdown", onStart);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onEnd);
 
     // Move and end events should use throttled handler
     // window.addEventListener("mousemove", throttledOnMove);
@@ -149,12 +157,15 @@
 
     return {
       destroy() {
-        target.removeEventListener("mousedown", onStart);
-        target.removeEventListener("touchstart", onStart);
-        target.removeEventListener("mousemove", throttledOnMove);
-        target.removeEventListener("mouseup", onEnd);
-        target.removeEventListener("touchmove", throttledOnMove);
-        target.removeEventListener("touchend", onEnd);
+        target.removeEventListener("pointerdown", onStart);
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onEnd);
+        // target.removeEventListener("mousedown", onStart);
+        // target.removeEventListener("touchstart", onStart);
+        // target.removeEventListener("mousemove", throttledOnMove);
+        // target.removeEventListener("mouseup", onEnd);
+        // target.removeEventListener("touchmove", throttledOnMove);
+        // target.removeEventListener("touchend", onEnd);
       },
     };
   }
@@ -206,7 +217,8 @@
 
     grabbers.forEach((grabber) => {
       element.appendChild(grabber);
-      grabber.addEventListener("mousedown", onMouseDown);
+      // grabber.addEventListener("mousedown", onMouseDown);
+      grabber.addEventListener("pointerdown", onMouseDown);
     });
 
     const minWidth = 80;
@@ -225,7 +237,10 @@
 
       if (direction.match("east")) {
         delta = (event.pageX - initialPos.x) / $store.contentScale;
-        $store.width = Math.max(initialRect.width + delta, minWidth);
+        store.update((data) => {
+          data.width = Math.max(initialRect.width + delta, minWidth);
+          return data;
+        });
       }
       if (direction.match("west")) {
         delta = (initialPos.x - event.pageX) / $store.contentScale;
@@ -233,8 +248,11 @@
           onMouseUp();
           return;
         }
-        $store.x = initialRect.left - delta;
-        $store.width = Math.max(initialRect.width + delta, minWidth);
+        store.update((data) => {
+          data.x = initialRect.left - delta;
+          data.width = Math.max(initialRect.width + delta, minWidth);
+          return data;
+        });
       }
       if (direction.match("north")) {
         delta = (initialPos.y - event.pageY) / $store.contentScale;
@@ -242,12 +260,18 @@
           onMouseUp();
           return;
         }
-        $store.y = initialRect.top - delta;
-        $store.height = Math.max(initialRect.height + delta, minHeight);
+        store.update((data) => {
+          data.y = initialRect.top - delta;
+          data.height = Math.max(initialRect.height + delta, minHeight);
+          return data;
+        });
       }
       if (direction.match("south")) {
         delta = (event.pageY - initialPos.y) / $store.contentScale;
-        $store.height = Math.max(initialRect.height + delta, minHeight);
+        store.update((data) => {
+          data.height = Math.max(initialRect.height + delta, minHeight);
+          return data;
+        });
       }
 
       const pos = getTooltipScreenPosition(event, store, mainAppContainer, $mainAppStore);
@@ -312,65 +336,73 @@
   // #################################################### //
   // zoom functionality
   // https://stackoverflow.com/a/3151987
-  const scaleStep = 0.2; // Adjust the scaling step for smoother zoom
   function scalability(node) {
     if (!$store.scalable) return;
 
-    let initialDistance = 0;
+    const scaleStep = 0.2;
     let isScaling = false;
+    let pointers = new Map(); // Track active pointers for pinch
+    let initialDistance = 0;
 
     function changeScale(event, zoom) {
-      if ($contentProperties.isAWindowActive && !$store.isActiveDraggable) {
-        return;
-      }
-      const rect = node.parentElement.getBoundingClientRect();
-      const mouseX = initialDistance != 0 ? 1 : event.clientX - rect.left;
-      const mouseY = initialDistance != 0 ? 1 : event.clientY - rect.top;
-      let newScale = $store.scale * zoom;
+      if ($contentProperties.isAWindowActive && !$store.isActiveDraggable) return;
 
-      // apply the scale in callback
+      const rect = node.parentElement.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      const newScale = $store.scale * zoom;
+
       scaleFunc(store, event, mouseX, mouseY, newScale);
     }
 
+    // Mouse wheel zoom (desktop)
     function onMouseWheel(event) {
+      console.log("beginning wheel, ", isScaling || isDragging || resizing || $isDraggingSelect);
+      console.log(isDragging, resizing, $isDraggingSelect, isScaling);
       if (isScaling || isDragging || resizing || $isDraggingSelect) return;
       event.preventDefault();
+
       const wheel = event.deltaY < 0 ? 1 : -1;
       const zoom = Math.exp(wheel * scaleStep);
+      if ($store.scale == null) $store.scale = 1;
 
-      if ($store.scale == undefined) $store.scale = 1;
       changeScale(event, zoom);
     }
-    function onTouchStart(event) {
-      if (event.touches.length === 2) {
-        const touch1 = event.touches[0];
-        const touch2 = event.touches[1];
-        initialDistance = Math.hypot(
-          touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY,
-        );
+
+    // Pointer events
+    function onPointerDown(e) {
+      pointers.set(e.pointerId, e);
+      if (pointers.size === 2) {
+        // Two fingers = start pinch
+        const [p1, p2] = Array.from(pointers.values());
+        initialDistance = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY);
       }
+      // console.log('pointer down so scaling');
+      // isScaling = true;
     }
-    function onTouchMove(event) {
-      if (event.touches.length === 2) {
-        const touch1 = event.touches[0];
-        const touch2 = event.touches[1];
-        const currentDistance = Math.hypot(
-          touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY,
-        );
 
-        const delta = (currentDistance - initialDistance) * scaleStep * 0.1;
-        const zoom = Math.exp(delta);
+    function onPointerMove(e) {
+      if (!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, e);
 
-        changeScale(event, zoom || 1);
-
+      if (pointers.size === 2) {
+        const [p1, p2] = Array.from(pointers.values());
+        const currentDistance = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY);
+        if (initialDistance > 0) {
+          const delta = (currentDistance - initialDistance) * scaleStep * 0.01;
+          const zoom = Math.exp(delta);
+          changeScale(e, zoom);
+        }
         initialDistance = currentDistance;
       }
     }
 
-    function onTouchEnd(event) {
-      initialDistance = 0;
+    function onPointerUp(e) {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) {
+        initialDistance = 0;
+      }
+      isScaling = false;
     }
 
     function handleDragStart(event) {
@@ -389,48 +421,50 @@
 
     // Create throttled versions of the high-frequency event handlers
     const throttledMouseWheel = throttle(onMouseWheel, throttleLimit);
-    const throttledTouchMove = throttle(onTouchMove, throttleLimit);
+    const throttledTouchMove = throttle(onPointerMove, throttleLimit);
 
-    if ($store.useWindow) {
-      window.addEventListener("wheel", throttledMouseWheel, { passive: false });
-    } else {
-      node.addEventListener("wheel", throttledMouseWheel);
+    // Drag and mouse events
+    if (!$store.useWindow) {
       node.addEventListener("mousedown", handleDragStart);
       window.addEventListener("mouseup", handleDragEnd);
     }
 
-    window.addEventListener("touchstart", onTouchStart);
-    window.addEventListener("touchmove", throttledTouchMove);
-    window.addEventListener("touchend", onTouchEnd);
+    // Pointer events (handles touch + pen + mouse)
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", throttledTouchMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
 
-    // Adding wheel event listener to the target element
+    // Wheel events (target selection)
     let target;
     switch ($store.dragEventTarget) {
       case "window":
-        window.addEventListener("wheel", throttledMouseWheel, { passive: false });
+        target = window;
+        break;
+      case "node":
+        target = node;
         break;
       default:
         target = document.getElementById($store.dragEventTarget);
-        target.addEventListener("wheel", throttledMouseWheel);
         break;
     }
+    target.addEventListener("wheel", throttledMouseWheel, { passive: false });
+
+    console.log("target: ", target);
+    console.log($store.dragEventTarget);
 
     return {
       destroy() {
-        if ($store.useWindow) {
-          window.removeEventListener("wheel", throttledMouseWheel);
-        } else {
-          node.removeEventListener("wheel", throttledMouseWheel);
+        if (!$store.useWindow) {
           node.removeEventListener("mousedown", handleDragStart);
           window.removeEventListener("mouseup", handleDragEnd);
         }
-        window.removeEventListener("touchstart", onTouchStart);
-        window.removeEventListener("touchmove", throttledTouchMove);
-        window.removeEventListener("touchend", onTouchEnd);
-
-        // Remove wheel event listener from the target element
+        window.removeEventListener("pointerdown", onPointerDown);
+        window.removeEventListener("pointermove", throttledTouchMove);
+        window.removeEventListener("pointerup", onPointerUp);
+        window.removeEventListener("pointercancel", onPointerUp);
         if (target) {
-          target.removeEventListener("wheel", onMouseWheel);
+          target.removeEventListener("wheel", throttledMouseWheel);
         }
       },
     };
@@ -459,20 +493,29 @@
             //   "to frame",
             //   frameID
             // );
-            $store.isInsideFrameID = frameID;
+            store.update((data) => {
+              data.isInsideFrameID = frameID;
+              return data;
+            });
             // Additional logic here for updating GunDB or handling frame transfer
             user.get("windows").get(uniqueID).put({ isInsideFrameID: frameID });
           } else if ($store.isInsideFrameID === "") {
             // Window was not in any frame and is now being placed inside a frame
             // console.log("Placing window inside frame", frameID);
-            $store.isInsideFrameID = frameID;
+            store.update((data) => {
+              data.isInsideFrameID = frameID;
+              return data;
+            });
             // Additional logic here for updating GunDB or handling initial placement into a frame
             user.get("windows").get(uniqueID).put({ isInsideFrameID: frameID });
           }
         } else if (!withinBounds && $store.isInsideFrameID === frameID) {
           // Window was inside this frame but has now been moved out
           // console.log("Removing window from frame", frameID);
-          $store.isInsideFrameID = "";
+          store.update((data) => {
+            data.isInsideFrameID = "";
+            return data;
+          });
           // Additional logic here for updating GunDB or handling removal from a frame
           user.get("windows").get(uniqueID).put({ isInsideFrameID: "" });
         } else {
@@ -533,8 +576,14 @@
   use:draggable
   use:resize
   use:scalability
-  ondblclick={stopPropagation(handleDoubleClick)}
-  onclick={stopPropagation(handleClick)}
+  ondblclick={(e) => {
+    e.stopPropagation();
+    handleDoubleClick();
+  }}
+  onclick={(e) => {
+    e.stopPropagation();
+    handleClick();
+  }}
 >
   {#if children}{@render children()}{:else}No child Component provided{/if}
 </div>

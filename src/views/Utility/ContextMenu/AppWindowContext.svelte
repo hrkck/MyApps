@@ -4,6 +4,7 @@
 
   function deleteAppWindow() {
     let appId = $contextMenu.originalTargetID.split('-', 2).join("-");
+    console.log($contextMenu.originalTargetID);
     console.log(appId);
     removeWindowStore(appId);
     $contextMenu.visible = false;

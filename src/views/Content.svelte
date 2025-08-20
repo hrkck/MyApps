@@ -6,7 +6,7 @@
   import Frame from "./Apps/Frame.svelte";
   import DraggableResizable from "./DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
   import { contentProperties, contextMenu, windowStores } from "../scripts/storage";
-  import { deactivateWindow, frameApps } from "../scripts/utils";
+  import { deactivateWindows, frameApps } from "../scripts/utils";
   import ZoomIndicator from "./Utility/ZoomIndicator.svelte";
 
   let zoomIndicatorRef;
@@ -21,12 +21,18 @@
 
   const draggableFunctions = {
     dragStartFunc: function (store, event, x, y) {
-      $contentProperties.contentScale = 1;
+      contentProperties.update((data) => {
+        data.contentScale = 1;
+        return data;
+      });
     },
     dragMoveFunc: function (store, event, x, y) {},
     dragEndFunc: function (store, event, x, y) {},
     resizeStartFunc: function (store, event, x, y, width, height) {
-      $contentProperties.contentScale = 1;
+      contentProperties.update((data) => {
+        data.contentScale = 1;
+        return data;
+      });
     },
     resizeEndFunc: function (store, event, x, y, width, height) {},
     resizeMoveFunc: function (store, event, x, y, width, height) {},
@@ -59,7 +65,7 @@
       if ($contentProperties.isAWindowActive == "settings") {
         return;
       } else if ($contentProperties.isAWindowActive) {
-        deactivateWindow();
+        deactivateWindows();
       }
 
       if ($contextMenu.visible) {
@@ -72,14 +78,14 @@
   function resetWorkspacePosition() {
     frameApps(Object.keys($windowStores).filter((id) => id !== "mainContent"));
     // Deactivate any active window
-    deactivateWindow();
+    deactivateWindows();
   }
 
   function handleKeyPress(event) {
     if ($contentProperties.isAWindowActive) {
       if (event.key === "Escape") {
         console.log("ESC presses");
-        deactivateWindow();
+        deactivateWindows();
       }
     } else {
       if (event.key === "Home" || event.code === "Home") {

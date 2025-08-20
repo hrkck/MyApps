@@ -3,7 +3,7 @@
   import { get } from "svelte/store";
   import { onMount, onDestroy } from "svelte";
   import { contentProperties, isDraggingSelect, windowStores } from "../../scripts/storage.js";
-  import { deactivateWindow } from "../../scripts/utils.js";
+  import { deactivateWindows } from "../../scripts/utils.js";
 
   let dragSelectDiv = $state();
   let dragSelectDivWidth = $state("");
@@ -13,6 +13,7 @@
 
   function handleSelectMouseDown(event) {
     if (event.button === 0 && event.shiftKey) {
+      deactivateWindows();
       createOrUpdateDragSelect(event);
       window.addEventListener("mouseup", handleSelectMouseUp);
       $isDraggingSelect = true;
@@ -49,6 +50,42 @@
     });
   }
 
+  // helpers
+  function selectWindow(windowData) {
+    contentProperties.update((data) => {
+      data.selectedWindows = [...data.selectedWindows, get(windowData).uniqueID];
+      return data;
+    });
+    windowData.update((store) => {
+      store.selected = true;
+      return store;
+    });
+  }
+
+  function unselectWindow(windowData, index) {
+    contentProperties.update((data) => {
+      data.selectedWindows.splice(index, 1);
+      return data;
+    });
+    windowData.update((store) => {
+      store.selected = false;
+      return store;
+    });
+  }
+
+  export function unselectAllWindows() {
+    for (const windowData of Object.values(get(windowStores))) {
+      windowData.update((store) => {
+        store.selected = false;
+        return store;
+      });
+    }
+    contentProperties.update((data) => {
+      data.selectedWindows = [];
+      return data;
+    });
+  }
+
   function checkSelected(selectAreaElem) {
     let select;
     try {
@@ -59,41 +96,28 @@
     const { x, y, height, width } = select;
 
     for (const windowData of Object.values(get(windowStores))) {
-      const windowElem =
-        document.getElementById(`${get(windowData).uniqueID}`) ||
-        document.getElementById(`${get(windowData).uniqueID}`);
-      const index = $contentProperties.selectedWindows.indexOf(get(windowData).uniqueID);
-      if (windowElem) {
-        const rect = windowElem.getBoundingClientRect();
-        if (
-          checkRectIntersection(
-            { x: x + window.scrollX, y: y + window.scrollY, height, width },
-            rect,
-          )
-        ) {
-          // If the window is within the selection, add to list
-          $contentProperties.selectedWindows = [
-            ...$contentProperties.selectedWindows,
-            get(windowData).uniqueID,
-          ];
-          windowData.update((store) => {
-            store.selected = true;
-            return store;
-          });
-        } else if (index != -1) {
-          $contentProperties.selectedWindows.splice(index, 1);
-          $contentProperties.selectedWindows = $contentProperties.selectedWindows;
-          windowData.update((store) => {
-            store.selected = false;
-            return store;
-          });
-        }
+      const id = get(windowData).uniqueID;
+      const windowElem = document.getElementById(id);
+      const index = $contentProperties.selectedWindows.indexOf(id);
+
+      if (!windowElem) continue;
+
+      const rect = windowElem.getBoundingClientRect();
+      if (
+        checkRectIntersection({ x: x + window.scrollX, y: y + window.scrollY, height, width }, rect)
+      ) {
+        selectWindow(windowData);
+      } else if (index !== -1) {
+        unselectWindow(windowData, index);
       }
-      $contentProperties.selectedWindows = [...new Set($contentProperties.selectedWindows)];
+      contentProperties.update((data) => {
+        data.selectedWindows = [...new Set(data.selectedWindows)];
+        return data;
+      });
     }
+
     // first if a window is active, deactivate it
     if ($contentProperties.isAWindowActivated) {
-      deactivateWindow();
     }
   }
 
@@ -131,6 +155,10 @@
     window.removeEventListener("keyup", handleKeyUp);
   });
 </script>
+
+<!-- <svelte:window
+  onpointerdown={unselectAllWindows}
+/> -->
 
 {#if $isDraggingSelect}
   <div
