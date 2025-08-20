@@ -5,17 +5,22 @@
   import { applications } from "../../scripts/applicationsList";
   import { contentProperties, removeWindowStore, windowStores } from "../../scripts/storage";
   import DraggableResizable from "../DraggableResizableScalableComponent/DraggableResizableScalable.svelte";
-  import { activateWindow, checkBoundaries, getAppIDsInAFrame } from "../../scripts/utils";
+  import {
+    activateWindow,
+    checkBoundaries,
+    getAppIDsInAFrame,
+    restackWindows,
+  } from "../../scripts/utils";
   import AppPreview from "./AppPreview.svelte";
   import { user } from "../../scripts/initGun";
-    import { get } from "svelte/store";
+  import { get } from "svelte/store";
 
   let { uniqueID } = $props();
   let draggableComponent; // ref to draggable component
   const store = $windowStores[uniqueID];
   let selected = $state(false);
-  let appComponent =  $state(null); // Will hold the dynamically loaded component
-  let isLoading =  $state(false); // Flag to indicate if the component is loading
+  let appComponent = $state(null); // Will hold the dynamically loaded component
+  let isLoading = $state(false); // Flag to indicate if the component is loading
   let loadError = $state(null); // To capture any loading errors
 
   const isLinkApp = uniqueID.split("-")[0] == "linkApp";
@@ -27,10 +32,30 @@
         data.contentScale = $contentProperties.scale;
         return data;
       });
+      restackWindows(uniqueID, $windowStores);
     },
     dragMoveFunc: function (s, event, x, y) {
       if (!event.shiftKey) {
         checkBoundaries($store.isInsideFrameID);
+
+        const selectedIds = $contentProperties.selectedWindows;
+        for (const id of selectedIds) {
+          const windowStore = $windowStores[id];
+          ``;
+
+          console.log(get(windowStore).uniqueID, uniqueID);
+          if (get(windowStore).uniqueID == uniqueID) {
+            continue;
+          }
+
+          if (windowStore) {
+            windowStore.update((store) => {
+              store.x += x;
+              store.y += y;
+              return store;
+            });
+          }
+        }
       }
     },
     dragEndFunc: function (s, event, x, y) {
@@ -70,14 +95,12 @@
       // console.log("clicked on window, ", uniqueID);
       // increase here store.update((d) => {d.zIndex +=1; return data})
       // in a way where images will pop top when clicked, cycle in low number of zindex
-
-      for (const [id, winStore] of Object.entries($windowStores)) {
-        winStore.update(data => {
-          data.zIndex = id === uniqueID ? 202 : 201;
-          return data;
-        });
-      }
-
+      // for (const [id, winStore] of Object.entries($windowStores)) {
+      //   winStore.update((data) => {
+      //     data.zIndex = id === uniqueID ? 202 : 201;
+      //     return data;
+      //   });
+      // }
     },
     dbclickFunc: function (store, event) {
       if (!$contentProperties.isAWindowActive && !showIcon) {
@@ -91,7 +114,7 @@
   }
 
   let showIcon = $state(true);
-  
+
   function checkShowIcon() {
     // Set showIcon based on the scale
     showIcon =
@@ -99,8 +122,11 @@
       $store.height * $contentProperties.scale < window.innerHeight / 4 &&
       $store.id != 1;
     if (showIcon && $contentProperties.activeWindow == uniqueID) {
-      $contentProperties.isAWindowActive = false;
-      $contentProperties.activeWindow = "";
+      contentProperties.update((data) => {
+        data.isAWindowActive = false;
+        data.activeWindow = "";
+        return data;
+      });
     }
   }
 
@@ -111,9 +137,7 @@
     loadError = null;
     try {
       // Find the application data
-      const appData = applications.find(
-        (data) => data.name === $store.name
-      );
+      const appData = applications.find((data) => data.name === $store.name);
       if (appData && typeof appData.component === "function") {
         const module = await appData.component();
         appComponent = module.default;
@@ -130,7 +154,6 @@
       isLoading = false;
     }
   }
-
 
   $effect(() => {
     checkShowIcon();
@@ -154,7 +177,11 @@
 </script>
 
 <DraggableResizable {uniqueID} {store} {...draggableFunctions} bind:this={draggableComponent}>
-  <div id={uniqueID + "-appcontent"} class="app-content" class:pointer-events={!$store.isActive && (!isLinkApp || !showIcon)}>
+  <div
+    id={uniqueID + "-appcontent"}
+    class="app-content"
+    class:pointer-events={!$store.isActive && (!isLinkApp || !showIcon)}
+  >
     {#if showIcon}
       <AppPreview {uniqueID} />
     {:else if appComponent}
