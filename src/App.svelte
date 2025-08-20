@@ -7,8 +7,15 @@
   import { contentProperties, contextMenu } from "./scripts/storage";
   import DragSelect from "./views/Utility/DragSelect.svelte";
 
-  // Context Menu management
+  let DragSelectRef;
 
+  function onPointerDown(e) {
+    if (e.target.id == "mainContent-background") {
+      DragSelectRef.unselectAllWindows();
+    }
+  }
+
+  // Context Menu management
   function showContextMenu(event) {
     event.preventDefault();
     if ($contentProperties.isAWindowActive) return;
@@ -23,8 +30,11 @@
   }
 
   function trackMousePosition(event) {
-    $contentProperties.mouseX = event.clientX;
-    $contentProperties.mouseY = event.clientY;
+    contentProperties.update((data)=>{
+      data.mouseX = event.clientX;
+      data.mouseY = event.clientY;
+      return data;
+    }) 
   }
 </script>
 
@@ -32,6 +42,7 @@
   oncontextmenu={showContextMenu}
   onmousemove={trackMousePosition}
   ondragover={trackMousePosition}
+  onpointerdown={onPointerDown}
 />
 
 <main id="app">
@@ -39,7 +50,7 @@
   <Background store={contentProperties} />
 
   <!-- Add App Selection -->
-  <DragSelect></DragSelect>
+  <DragSelect bind:this={DragSelectRef}></DragSelect>
 
   <!-- right click context menu for adding apps, app groups, reset storage etc. -->
   {#if $contextMenu.visible}
