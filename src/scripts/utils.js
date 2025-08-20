@@ -397,7 +397,7 @@ export function activateWindow(windowID) {
   });
 }
 
-export function deactivateWindow() {
+export function deactivateWindows() {
   // find which app is active
   const windowID = get(contentProperties).activeWindow;
   // reset content data
@@ -419,6 +419,40 @@ export function deactivateWindow() {
   user.get("windows").get(windowID).put({ isActive: false });
   document.activeElement.blur();
 }
+
+
+export function restackWindows(uniqueID, $windowStores) {
+  const BASE_Z_INDEX = 200;
+
+  const windowStates = Object.entries($windowStores).map(([id, store]) => ({
+    id,
+    zIndex: get(store).zIndex,
+  }));
+
+  const otherWindows = windowStates.filter(w => w.id !== uniqueID);
+
+  otherWindows.sort((a, b) => a.zIndex - b.zIndex);
+
+  const newZIndexMap = {};
+
+  otherWindows.forEach((win, index) => {
+    newZIndexMap[win.id] = BASE_Z_INDEX + index;
+  });
+
+  newZIndexMap[uniqueID] = BASE_Z_INDEX + otherWindows.length;
+
+  for (const [id, winStore] of Object.entries($windowStores)) {
+    if (newZIndexMap[id] !== undefined) {
+      winStore.update((data) => {
+        if (data.zIndex !== newZIndexMap[id]) {
+            data.zIndex = newZIndexMap[id];
+        }
+        return data;
+      });
+    }
+  }
+}
+
 
 
 export const arrayToObject = (array) => {
