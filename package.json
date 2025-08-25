@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "deploy": "vite build  && rsync -r -t -v --progress -s '/home/hakki/A/projeler/programming/hakkisapps/MyApps (svelte-5-migration)/dist/' 192.168.1.174:/home/hakki/myapps/",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
   },

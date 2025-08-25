@@ -60,19 +60,22 @@
       event.preventDefault();
 
       let dx, dy;
-      if (event.type === "mousemove") {
+      if (event.pointerType === "mouse" || event.pointerType === "pen") {
+        // movementX / movementY are reliable for mouse/pen
         dx = event.movementX;
         dy = event.movementY;
-      } else if (event.touches) {
-        const currentTouchX = event.touches[0].clientX;
-        const currentTouchY = event.touches[0].clientY;
+      } else if (event.pointerType === "touch") {
+        // emulate touch deltas using last position
+        const currentX = event.clientX;
+        const currentY = event.clientY;
         if (lastTouchX !== undefined && lastTouchY !== undefined) {
-          dx = currentTouchX - lastTouchX;
-          dy = currentTouchY - lastTouchY;
+          dx = currentX - lastTouchX;
+          dy = currentY - lastTouchY;
         }
-        lastTouchX = currentTouchX;
-        lastTouchY = currentTouchY;
+        lastTouchX = currentX;
+        lastTouchY = currentY;
       }
+
       if (dx !== undefined && dy !== undefined) {
         store.update((data) => {
           data.x += dx / $store.contentScale;
@@ -98,11 +101,9 @@
         lastTouchX = event.touches[0].clientX;
         lastTouchY = event.touches[0].clientY;
       }
-      // Add move and end listeners
-      window.addEventListener("mousemove", onMove);
-      window.addEventListener("mouseup", onEnd);
-      window.addEventListener("touchmove", onMove, { passive: false });
-      window.addEventListener("touchend", onEnd);
+      // attach move + end only while dragging
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onEnd);
 
       dragStartFunc(store, event, $store.x, $store.y);
     }
@@ -112,10 +113,9 @@
       isDragging = false;
       lastTouchX = undefined;
       lastTouchY = undefined;
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onEnd);
-      window.removeEventListener("touchmove", onMove);
-      window.removeEventListener("touchend", onEnd);
+
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onEnd);
 
       dragEndFunc(store, event, $store.x, $store.y);
     }
@@ -142,30 +142,13 @@
     }
 
     // Start events
-    // target.addEventListener("mousedown", onStart);
-    // target.addEventListener("touchstart", onStart, { passive: false });
-
     target.addEventListener("pointerdown", onStart);
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onEnd);
-
-    // Move and end events should use throttled handler
-    // window.addEventListener("mousemove", throttledOnMove);
-    // window.addEventListener("mouseup", onEnd);
-    // window.addEventListener("touchmove", throttledOnMove);
-    // window.addEventListener("touchend", onEnd);
 
     return {
       destroy() {
         target.removeEventListener("pointerdown", onStart);
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onEnd);
-        // target.removeEventListener("mousedown", onStart);
-        // target.removeEventListener("touchstart", onStart);
-        // target.removeEventListener("mousemove", throttledOnMove);
-        // target.removeEventListener("mouseup", onEnd);
-        // target.removeEventListener("touchmove", throttledOnMove);
-        // target.removeEventListener("touchend", onEnd);
       },
     };
   }

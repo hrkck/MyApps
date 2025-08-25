@@ -181,6 +181,7 @@
     id={uniqueID + "-appcontent"}
     class="app-content"
     class:pointer-events={!$store.isActive && (!isLinkApp || !showIcon)}
+    style="overflow:{$store.isActive ? "auto" : "hidden" }"
   >
     {#if showIcon}
       <AppPreview {uniqueID} />
@@ -202,7 +203,6 @@
     height: 100%; /* - 30px;*/
     bottom: 0;
     display: block;
-    overflow: hidden;
     background-color: rgb(255, 255, 255);
     border: 1px solid black;
   }
